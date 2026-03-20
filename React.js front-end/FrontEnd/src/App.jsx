@@ -3,14 +3,14 @@ import axios from "axios";
 
 const API_BASE = "http://localhost:5000/api/notes";
 
-/* -- Google Fonts -- */
+/* ── Google Fonts ── */
 const fontLink = document.createElement("link");
 fontLink.rel = "stylesheet";
 fontLink.href =
   "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap";
 document.head.appendChild(fontLink);
 
-/* -- Global CSS -- */
+/* ── Global CSS ── */
 const globalCSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -45,7 +45,7 @@ const globalCSS = `
   ::-webkit-scrollbar-thumb { background: #d4d2cc; border-radius: 4px; }
 `;
 
-/* -- Icons -- */
+/* ── Icons ── */
 const SearchIcon = () => (
   <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
     <circle cx="7" cy="7" r="5" stroke="#9e9c96" strokeWidth="1.5"/>
@@ -80,7 +80,7 @@ const NotesEmptyIcon = () => (
   </svg>
 );
 
-/* -- Toast -- */
+/* ── Toast ── */
 function useToast() {
   const [toasts, setToasts] = useState([]);
   const push = useCallback((msg, type = "success") => {
@@ -110,7 +110,7 @@ function ToastStack({ toasts }) {
             padding: "11px 16px",
             borderRadius: "10px",
             background: t.type === "error" ? "#fff1f0" : "#edfaf4",
-            border: `1px solid \`,
+            border: `1px solid ${t.type === "error" ? "#ffc9c9" : "#9FE1CB"}`,
             fontSize: "13px", fontWeight: 500,
             color: t.type === "error" ? "#c0392b" : "#0F6E56",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
@@ -128,7 +128,7 @@ function ToastStack({ toasts }) {
   );
 }
 
-/* -- Note Card -- */
+/* ── Note Card ── */
 function NoteCard({ note, onDelete, index }) {
   const [hovered, setHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -144,9 +144,9 @@ function NoteCard({ note, onDelete, index }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        animationDelay: `\s`,
+        animationDelay: `${index * 0.05}s`,
         background: note.isImportant ? "#edfaf4" : "#fff",
-        border: `1px solid \`,
+        border: `1px solid ${note.isImportant ? "#9FE1CB" : hovered ? "#c8c6bf" : "#e8e6e0"}`,
         borderRadius: "14px",
         padding: "18px 20px",
         display: "flex",
@@ -192,7 +192,7 @@ function NoteCard({ note, onDelete, index }) {
       {/* footer */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        borderTop: `1px solid \`,
+        borderTop: `1px solid ${note.isImportant ? "#9FE1CB55" : "#f0ede8"}`,
         paddingTop: "10px",
       }}>
         <span style={{
@@ -233,7 +233,7 @@ function NoteCard({ note, onDelete, index }) {
   );
 }
 
-/* -- Add Note Form -- */
+/* ── Add Note Form ── */
 function AddNoteForm({ onAdd }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -261,7 +261,7 @@ function AddNoteForm({ onAdd }) {
   const inputStyle = (hasErr) => ({
     width: "100%",
     background: "#faf9f6",
-    border: `1px solid \`,
+    border: `1px solid ${hasErr ? "#ffc9c9" : "#e8e6e0"}`,
     borderRadius: "9px",
     padding: "9px 13px",
     fontSize: "13px",
@@ -314,7 +314,7 @@ function AddNoteForm({ onAdd }) {
         style={{
           display: "flex", alignItems: "center", gap: "9px",
           background: isImportant ? "#edfaf4" : "transparent",
-          border: `1px solid \`,
+          border: `1px solid ${isImportant ? "#9FE1CB" : "#e8e6e0"}`,
           borderRadius: "9px",
           padding: "8px 12px",
           fontSize: "12.5px", fontWeight: 500,
@@ -326,7 +326,7 @@ function AddNoteForm({ onAdd }) {
         <div style={{
           width: "16px", height: "16px", borderRadius: "5px", flexShrink: 0,
           background: isImportant ? "#1D9E75" : "transparent",
-          border: `1.5px solid \`,
+          border: `1.5px solid ${isImportant ? "#1D9E75" : "#c8c6bf"}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "all 0.18s",
         }}>
@@ -361,7 +361,7 @@ function AddNoteForm({ onAdd }) {
   );
 }
 
-/* -- Skeleton loader -- */
+/* ── Skeleton loader ── */
 function SkeletonCard() {
   return (
     <div style={{
@@ -379,7 +379,7 @@ function SkeletonCard() {
   );
 }
 
-/* -- App -- */
+/* ── App ── */
 export default function App() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -415,7 +415,7 @@ export default function App() {
 
   const deleteNote = async (id) => {
     try {
-      await axios.delete(`\/\`);
+      await axios.delete(`${API_BASE}/${id}`);
       setNotes(prev => prev.filter(n => n.id !== id));
       push("Note deleted");
     } catch {
@@ -440,7 +440,7 @@ export default function App() {
 
       <div style={{ minHeight: "100vh", background: "#f5f4f0" }}>
 
-        {/* -- Header -- */}
+        {/* ── Header ── */}
         <header style={{
           background: "#fff",
           borderBottom: "1px solid #e8e6e0",
@@ -478,7 +478,7 @@ export default function App() {
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   background: filter === key ? "#edfaf4" : "transparent",
-                  border: `1px solid \`,
+                  border: `1px solid ${filter === key ? "#9FE1CB" : "#e8e6e0"}`,
                   borderRadius: "8px",
                   padding: "5px 13px",
                   fontSize: "12.5px", fontWeight: 500,
@@ -501,7 +501,7 @@ export default function App() {
           </div>
         </header>
 
-        {/* -- Body -- */}
+        {/* ── Body ── */}
         <div style={{
           maxWidth: "1160px", margin: "0 auto",
           padding: "28px",
@@ -511,7 +511,7 @@ export default function App() {
           alignItems: "start",
         }}>
 
-          {/* -- Sidebar -- */}
+          {/* ── Sidebar ── */}
           <aside style={{
             display: "flex", flexDirection: "column", gap: "20px",
             position: "sticky", top: "76px",
@@ -534,7 +534,7 @@ export default function App() {
                 ].map(s => (
                   <div key={s.label} style={{
                     background: s.accent ? "#edfaf4" : "#faf9f6",
-                    border: `1px solid \`,
+                    border: `1px solid ${s.accent ? "#9FE1CB" : "#f0ede8"}`,
                     borderRadius: "11px", padding: "14px",
                   }}>
                     <div style={{
@@ -564,7 +564,7 @@ export default function App() {
             </div>
           </aside>
 
-          {/* -- Main -- */}
+          {/* ── Main ── */}
           <main style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
             {/* Search */}
@@ -596,7 +596,7 @@ export default function App() {
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}
                 >
-                  ?
+                  ✕
                 </button>
               )}
             </div>

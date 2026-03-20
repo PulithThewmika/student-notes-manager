@@ -32,6 +32,16 @@ jobs:
                const coredemo = require('@actions/core')
                return await coredemo.getIDToken()
            result-encoding: string
+           
+      # Add a manual build step
+      - name: Build frontend
+        run: |
+          cd "React.js front-end"
+          npm install
+          npm run build
+        env:
+          VITE_AZURE_BACKEND: ${{ secrets.AZURE_BACKEND }}
+          
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -39,11 +49,11 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_DUNE_03F2C7B00 }}
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./React.js front-end" # App source code path
+          app_location: "/" # App source code path is root now because we build manually
           api_location: "" # Api source code path - optional
-          output_location: "dist" # Built app content directory - optional
+          output_location: "React.js front-end/dist" # Built app content directory
           github_id_token: ${{ steps.idtoken.outputs.result }}
+          skip_app_build: true # Tells Oryx NOT to try building the frontend folder
           ###### End of Repository/Build Configurations ######
         env:
           VITE_AZURE_BACKEND: ${{ secrets.AZURE_BACKEND }}

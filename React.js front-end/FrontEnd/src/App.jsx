@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+ï»¿import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const API_BASE = "http://localhost:5000/api/notes";
@@ -226,7 +226,7 @@ function NoteCard({ note, onDelete, index }) {
             transition: "all 0.15s",
           }}
         >
-          <TrashIcon /> {deleting ? "…" : "delete"}
+          <TrashIcon /> {deleting ? "â€¦" : "delete"}
         </button>
       </div>
     </div>
@@ -355,7 +355,7 @@ function AddNoteForm({ onAdd }) {
         }}
       >
         {!loading && <PlusIcon />}
-        {loading ? "Adding…" : "Add note"}
+        {loading ? "Addingâ€¦" : "Add note"}
       </button>
     </div>
   );
@@ -576,7 +576,7 @@ export default function App() {
               <SearchIcon />
               <input
                 type="text"
-                placeholder="Search notes…"
+                placeholder="Search notesâ€¦"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 style={{

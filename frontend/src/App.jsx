@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api/notes";
+const API_BASE = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000/api/notes";
 
 /* ── Google Fonts ── */
 const fontLink = document.createElement("link");

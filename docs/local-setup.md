@@ -5,6 +5,7 @@ Follow these instructions to run the Student Notes Manager application on your l
 ## Prerequisites
 - **Node.js**: v18.x or later. (For running React and Vite)
 - **.NET SDK**: v9.0 or later. (For compiling and running the ASP.NET Core API)
+- **MongoDB**: A running local system service or generic Atlas Cluster.
 - **Git**: For version control.
 - **VS Code**: Or any code editor of your choice.
 
@@ -12,18 +13,25 @@ Follow these instructions to run the Student Notes Manager application on your l
 
 ## 1. Running the API (Backend)
 
-The API is built using ASP.NET Core Minimal APIs.
+The API is built using ASP.NET Core Minimal APIs and interfaces with MongoDB.
 
 1. Open your terminal.
 2. Navigate to the backend directory:
    ```bash
    cd ".NET back-end Web API/NotesApi"
    ```
-3. Run the application:
+3. Set up the Database variables. Under the `NotesApi` folder, create a `.env` file formatted like this:
+   ```env
+   MONGO_URI=mongodb://localhost:27017
+   MONGO_DB_NAME=student_notes_db
+   MONGO_COLLECTION_NAME=notes
+   ```
+   *(Ensure MongoDB is locally running, or substitute the URL with an active Atlas connection string).*
+4. Run the application:
    ```bash
    dotnet run
    ```
-4. Verification:
+5. Verification:
    The terminal will output the local ports it is listening on (usually `http://localhost:5000` or `https://localhost:5001`). 
    - Test the health endpoint: Open `http://localhost:5000/health` in your browser. It should say `Healthy`.
 

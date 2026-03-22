@@ -1,7 +1,10 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000/api/notes";
+let API_BASE = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000/api/notes";
+if (import.meta.env.VITE_AZURE_BACKEND && !import.meta.env.VITE_AZURE_BACKEND.endsWith('/api/notes')) {
+  API_BASE = `${import.meta.env.VITE_AZURE_BACKEND.replace(/\/$/, '')}/api/notes`;
+}
 
 /* ── Google Fonts ── */
 const fontLink = document.createElement("link");

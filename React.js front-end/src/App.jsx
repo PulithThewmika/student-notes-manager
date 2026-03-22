@@ -387,12 +387,23 @@ export default function App() {
   const [search, setSearch] = useState("");
   const { toasts, push } = useToast();
 
+  // Handle UUID retrieval or generation
+  const getUserId = () => {
+    let userId = localStorage.getItem("userId");
+    if (!userId) {
+      userId = crypto.randomUUID();
+      localStorage.setItem("userId", userId);
+    }
+    return userId;
+  };
+
   useEffect(() => { fetchNotes(); }, []);
 
   const fetchNotes = async () => {
     setLoading(true);
+    const userId = getUserId();
     try {
-      const res = await axios.get(API_BASE);
+      const res = await axios.get(`${API_BASE}?userId=${encodeURIComponent(userId)}`);
       setNotes(res.data);
     } catch {
       push("Failed to load notes", "error");
@@ -402,8 +413,9 @@ export default function App() {
   };
 
   const addNote = async (note) => {
+    const userId = getUserId();
     try {
-      const res = await axios.post(API_BASE, note);
+      const res = await axios.post(API_BASE, { ...note, userId });
       setNotes(prev => [res.data, ...prev]);
       push("Note added successfully");
       return true;
@@ -414,8 +426,9 @@ export default function App() {
   };
 
   const deleteNote = async (id) => {
+    const userId = getUserId();
     try {
-      await axios.delete(`${API_BASE}/${id}`);
+      await axios.delete(`${API_BASE}/${id}?userId=${encodeURIComponent(userId)}`);
       setNotes(prev => prev.filter(n => n.id !== id));
       push("Note deleted");
     } catch {

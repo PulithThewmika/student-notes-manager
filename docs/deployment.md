@@ -18,6 +18,12 @@ Both frontend and backend are deployed automatically whenever code is pushed (or
 - `AZURE_TENANT_ID`
 - `AZURE_SUBSCRIPTION_ID`
 
+**Target Environment / App Service Settings:**
+Note: You must map these values manually in your production Azure environment (*App Service > Settings > Environment Variables*) so the app can communicate with MongoDB:
+- `MONGO_URI`
+- `MONGO_DB_NAME`
+- `MONGO_COLLECTION_NAME`
+
 ### 2. Frontend Workflow (`azure-static-web-apps-....yml`)
 - Tracks changes in the `React.js front-end/` directory.
 - Runs `npm install` and `npm run build` using the Node.js runner.

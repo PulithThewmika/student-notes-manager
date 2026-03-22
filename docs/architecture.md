@@ -15,16 +15,20 @@ The application is divided into two primary tiers: a client-side frontend and a 
 
 ### Back-end (API Tier)
 - **Framework:** .NET 9.0 (ASP.NET Core Minimal APIs)
-- **Data Store:** In-memory list (for demonstration purposes)
-- **Responsibility:** Receives HTTP requests, processes business logic (validation, data manipulation), and returns JSON responses. Also provides a `/health` endpoint for monitoring.
+- **Data Store:** **MongoDB** (via `MongoDB.Driver`), storing documents segmented by user context.
+- **Environment Management:** Uses `DotNetEnv` locally to manage secrets and connection descriptors.
+- **Responsibility:** Receives HTTP requests, handles anonymous user isolation, processes business logic (validation, data manipulation), and stores/returns JSON data. Also provides a `/health` endpoint for monitoring.
 - **Hosting:** **Azure App Service (Web Apps)**
 
-## 2. Data Flow
+## 2. Data Flow & Security (Anonymous Sessions)
 
-1. The user interacts with the React web interface (e.g., clicking "Add Note").
-2. The React app makes an asynchronous HTTP request (via Axios) to the .NET 9 API. The API URL is dynamically determined by the `VITE_AZURE_BACKEND` environment variable.
-3. The API controller validates the payload. If successful, it updates the in-memory data store and returns a success response.
-4. The React front-end receives the response and updates its local state, immediately reflecting the change in the UI.
+In this iteration, the system uses "headless" or anonymous sessions instead of a full login system to reduce friction while still mapping data uniquely per person:
+
+1. When a user opens the application, the React frontend generates a unique UUID (if one does not already exist) and persists it using the browser's `localStorage`.
+2. Every subsequent HTTP request to the .NET 9 API (via Axios) includes this generated `userId` as either a query parameter or body property.
+3. The API controller strictly filters and maps all queries and mutations against this `userId`, guaranteeing users can only interact with their own resources.
+4. The backend interacts directly with MongoDB to persist or adjust records safely logic-gated by the `userId`.
+5. The React front-end receives the response and updates its local state, seamlessly reflecting the changes.
 
 ## 3. Cloud Architecture (Azure)
 

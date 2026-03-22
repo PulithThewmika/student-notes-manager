@@ -9,9 +9,12 @@ A full-stack web application demonstrating the deployment of a React front-end a
 - Vite (Build Tool)
 - Axios (HTTP Client)
 - Deployed on **Azure Static Web Apps**
+- **Anonymous Authentication:** Uses `localStorage` UUIDs to persist data securely per user without full logins.
 
 **Back-end:**
 - .NET 9.0 ASP.NET Core Web API
+- MongoDB (via `MongoDB.Driver`) for persistent data storage
+- `DotNetEnv` for loading environment variables
 - Minimal APIs mapped for CRUD operations
 - Swagger/OpenAPI for documentation
 - Health Checks integrated
@@ -34,6 +37,7 @@ student-notes-manager/
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [MongoDB](https://www.mongodb.com/try/download/community) (Local instance or an Atlas cloud cluster)
 
 ### Running the Back-end
 1. Navigate to the API directory:

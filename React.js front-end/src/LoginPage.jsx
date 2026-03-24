@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -504,10 +504,10 @@ export default function LoginPage() {
                       <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5"/>
                       <path d="M7 1.5A5.5 5.5 0 0112.5 7" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    {tab === "login" ? "Signing in…" : "Creating account…"}
+                    Signing in…
                   </>
                 ) : (
-                  <>{tab === "login" ? "Sign in" : "Create account"} <ArrowRight /></>
+                  <>Sign in <ArrowRight /></>
                 )}
               </button>
             </div>

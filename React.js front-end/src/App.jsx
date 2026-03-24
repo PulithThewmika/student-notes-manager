@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Navigate } from "react-router-dom";
 import axios from "axios";
 
 let API_ROOT = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000";
@@ -171,181 +172,6 @@ function ToastStack({ toasts }) {
   );
 }
 
-/* ── Auth Page ── */
-function AuthPage({ onAuth, toast }) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  const validate = () => {
-    const e = {};
-    if (!username.trim()) e.username = "Username is required";
-    else if (!isLogin && username.trim().length < 3) e.username = "Min 3 characters";
-    if (!password) e.password = "Password is required";
-    else if (!isLogin && password.length < 6) e.password = "Min 6 characters";
-    return e;
-  };
-
-  const handleSubmit = async () => {
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    setErrors({});
-    setLoading(true);
-    try {
-      const endpoint = isLogin ? "login" : "register";
-      const res = await axios.post(`${API_AUTH}/${endpoint}`, {
-        username: username.trim(),
-        password,
-      });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      onAuth(res.data.token, res.data.user);
-      toast(isLogin ? "Welcome back!" : "Account created!", "success");
-    } catch (err) {
-      const msg = err.response?.data?.error || (err.response?.status === 401 ? "Invalid credentials" : "Something went wrong");
-      toast(msg, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const inputStyle = (hasErr) => ({
-    width: "100%",
-    background: "#faf9f6",
-    border: `1px solid ${hasErr ? "#ffc9c9" : "#e8e6e0"}`,
-    borderRadius: "9px",
-    padding: "11px 14px",
-    fontSize: "13.5px",
-    color: "#1a1916",
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-    transition: "border-color 0.18s, box-shadow 0.18s",
-  });
-
-  return (
-    <div style={{
-      minHeight: "100vh", background: "#f5f4f0",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "24px",
-    }}>
-      <div className="auth-card" style={{
-        width: "100%", maxWidth: "380px",
-        background: "#fff",
-        border: "1px solid #e8e6e0",
-        borderRadius: "20px",
-        padding: "36px 32px",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
-      }}>
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-          <div style={{
-            width: "34px", height: "34px", borderRadius: "10px",
-            background: "linear-gradient(135deg, #973BED, #007CFF)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M 4 4 L 10 4 L 10 20 L 4 20 Z" fill="white" />
-              <path d="M 14 4 L 20 4 L 20 20 L 14 20 Z" fill="white" opacity="0.6" />
-              <path d="M 4 4 L 20 4 L 20 10 L 4 10 Z" fill="white" opacity="0.3" />
-            </svg>
-          </div>
-          <span style={{
-            fontSize: "18px", fontWeight: 700, letterSpacing: "-0.02em",
-            background: "linear-gradient(90deg, #973BED, #007CFF)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          }}>
-            NovaNotes
-          </span>
-        </div>
-
-        <p style={{ fontSize: "13px", color: "#9e9c96", marginBottom: "28px" }}>
-          {isLogin ? "Sign in to access your notes" : "Create a new account to get started"}
-        </p>
-
-        {/* Form */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div>
-            <label style={{ fontSize: "11.5px", fontWeight: 600, color: "#706e68", marginBottom: "5px", display: "block" }}>
-              Username
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={e => { setUsername(e.target.value); if (errors.username) setErrors(v => ({ ...v, username: "" })); }}
-              onKeyDown={e => e.key === "Enter" && handleSubmit()}
-              style={inputStyle(errors.username)}
-            />
-            {errors.username && (
-              <p style={{ fontSize: "11px", color: "#e74c3c", marginTop: "4px" }}>{errors.username}</p>
-            )}
-          </div>
-
-          <div>
-            <label style={{ fontSize: "11.5px", fontWeight: 600, color: "#706e68", marginBottom: "5px", display: "block" }}>
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={e => { setPassword(e.target.value); if (errors.password) setErrors(v => ({ ...v, password: "" })); }}
-              onKeyDown={e => e.key === "Enter" && handleSubmit()}
-              style={inputStyle(errors.password)}
-            />
-            {errors.password && (
-              <p style={{ fontSize: "11px", color: "#e74c3c", marginTop: "4px" }}>{errors.password}</p>
-            )}
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.background = "#17866a"; }}
-            onMouseLeave={e => { if (!loading) e.currentTarget.style.background = "#1D9E75"; }}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "7px",
-              background: loading ? "#9FE1CB" : "#1D9E75",
-              border: "none", borderRadius: "10px",
-              padding: "12px",
-              color: loading ? "#085041" : "#fff",
-              fontSize: "13.5px", fontWeight: 600,
-              letterSpacing: "0.01em",
-              transition: "background 0.18s, transform 0.1s",
-              transform: loading ? "scale(0.98)" : "scale(1)",
-              marginTop: "4px",
-            }}
-          >
-            {loading ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign in" : "Create account")}
-          </button>
-        </div>
-
-        {/* Toggle */}
-        <div style={{
-          marginTop: "22px", paddingTop: "18px",
-          borderTop: "1px solid #f0ede8",
-          textAlign: "center",
-        }}>
-          <span style={{ fontSize: "12.5px", color: "#9e9c96" }}>
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-          </span>
-          <button
-            onClick={() => { setIsLogin(v => !v); setErrors({}); }}
-            style={{
-              background: "none", border: "none",
-              fontSize: "12.5px", fontWeight: 600,
-              color: "#1D9E75",
-              textDecoration: "underline", textUnderlineOffset: "2px",
-            }}
-          >
-            {isLogin ? "Sign up" : "Sign in"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ── Note Card ── */
 function NoteCard({ note, onDelete, index }) {
@@ -733,15 +559,9 @@ export default function App() {
 
   const importantCount = notes.filter(n => n.isImportant).length;
 
-  /* ── No token → show auth page ── */
+  /* ── No token → show login page ── */
   if (!token) {
-    return (
-      <>
-        <style>{globalCSS}</style>
-        <AuthPage onAuth={handleAuth} toast={push} />
-        <ToastStack toasts={toasts} />
-      </>
-    );
+    return <Navigate to="/login" replace />;
   }
 
   if (showSplash) {

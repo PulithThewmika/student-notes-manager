@@ -276,7 +276,7 @@ export default function LandingPage() {
         <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
           <a href="#features" className="nav-link">Features</a>
           <a href="#how" className="nav-link">How it works</a>
-          <button className="cta-primary" onClick={() => navigate("/app")} style={{ padding: "9px 20px", fontSize: "13px" }}>
+          <button className="cta-primary" onClick={() => navigate("/login")} style={{ padding: "9px 20px", fontSize: "13px" }}>
             Open app <ArrowRight />
           </button>
         </div>
@@ -391,7 +391,7 @@ export default function LandingPage() {
 
           {/* CTA row */}
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button className="cta-primary" onClick={() => navigate("/app")}>
+            <button className="cta-primary" onClick={() => navigate("/login")}>
               Start taking notes <ArrowRight />
             </button>
             <a href="#features" className="cta-ghost">
@@ -665,7 +665,7 @@ export default function LandingPage() {
           <p style={{ fontSize: "15px", color: "#4a4844", marginBottom: "36px", lineHeight: 1.6 }}>
             Open the app and start capturing what matters.
           </p>
-          <button className="cta-primary" onClick={() => navigate("/app")} style={{ fontSize: "15px", padding: "15px 32px" }}>
+          <button className="cta-primary" onClick={() => navigate("/login")} style={{ fontSize: "15px", padding: "15px 32px" }}>
             Open Notes app <ArrowRight />
           </button>
         </div>

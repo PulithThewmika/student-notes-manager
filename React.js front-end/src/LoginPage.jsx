@@ -245,15 +245,10 @@ function StrengthMeter({ password }) {
 }
 
 /* ── Main Login Page ── */
-export default function LoginPage({ initialTab = "login" }) {
+export default function LoginPage() {
   const navigate = useNavigate();
-  const tab = initialTab;
-  const setTab = (newTab) => {
-    navigate(newTab === "login" ? "/login" : "/register");
-  };
-  const [email, setEmail] = useState(""); // Using email field as username for the backend API
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -266,15 +261,8 @@ export default function LoginPage({ initialTab = "login" }) {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // Reset state on tab switch
-  useEffect(() => {
-    setEmail(""); setPassword(""); setName("");
-    setErrors({}); setDone(false); setLoading(false); setShowPw(false);
-  }, [tab]);
-
   const validate = () => {
     const e = {};
-    if (tab === "signup" && !name.trim()) e.name = "Name is required";
     if (!email.trim()) e.email = "Enter your username/email";
     if (password.length < 6) e.password = "At least 6 characters";
     return e;
@@ -287,9 +275,8 @@ export default function LoginPage({ initialTab = "login" }) {
     setLoading(true);
 
     try {
-      const endpoint = tab === "login" ? "login" : "register";
-      const res = await axios.post(`${API_AUTH}/${endpoint}`, {
-        username: email.trim(), // API currently uses 'username'
+      const res = await axios.post(`${API_AUTH}/login`, {
+        username: email.trim(),
         password,
       });
       localStorage.setItem("token", res.data.token);
@@ -328,14 +315,14 @@ export default function LoginPage({ initialTab = "login" }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <span style={{ fontSize: "12.5px", color: "#3a3835", fontFamily: "'JetBrains Mono', monospace" }}>
-            {tab === "login" ? "New here?" : "Have an account?"}
+            New here?
           </span>
           <button
             className="nav-link"
-            onClick={() => setTab(tab === "login" ? "signup" : "login")}
+            onClick={() => navigate("/register")}
             style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13.5px", fontWeight: 500 }}
           >
-            {tab === "login" ? "Sign up →" : "Sign in →"}
+            Sign up →
           </button>
         </div>
       </nav>
@@ -401,7 +388,7 @@ export default function LoginPage({ initialTab = "login" }) {
             }}>
               <StarBadge />
               <span style={{ fontSize: "11.5px", fontWeight: 500, color: "#1D9E75", fontFamily: "'JetBrains Mono', monospace" }}>
-                {tab === "login" ? "Welcome back" : "Join for free"}
+                Welcome back
               </span>
             </div>
           </div>
@@ -444,41 +431,10 @@ export default function LoginPage({ initialTab = "login" }) {
                </div>
             )}
 
-            {/* Tab toggle */}
-            <div style={{
-              display: "flex", gap: "4px",
-              background: "#111110", border: "1px solid #1e1e1b",
-              borderRadius: "10px", padding: "4px",
-              marginBottom: "28px",
-            }}>
-              <button className={`tab-pill ${tab === "login" ? "active" : "inactive"}`} onClick={() => setTab("login")}>Sign in</button>
-              <button className={`tab-pill ${tab === "signup" ? "active" : "inactive"}`} onClick={() => setTab("signup")}>Sign up</button>
-            </div>
+
 
             {/* Fields */}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
-              {/* Name (signup only) */}
-              {tab === "signup" && (
-                <div>
-                  <label style={{ fontSize: "12px", fontWeight: 500, color: "#4a4844", letterSpacing: "0.02em", display: "block", marginBottom: "7px", fontFamily: "'JetBrains Mono', monospace" }}>
-                    FULL NAME
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      className={`login-input${errors.name ? " error" : ""}`}
-                      placeholder="Jane Smith"
-                      value={name}
-                      onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: "" })); }}
-                    />
-                    <svg style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "#333330", pointerEvents: "none", transition: "color 0.2s" }} className="input-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
-                      <circle cx="7.5" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
-                      <path d="M2.5 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                  {errors.name && <p style={{ fontSize: "11px", color: "#e05050", marginTop: "5px", fontFamily: "'JetBrains Mono', monospace" }}>{errors.name}</p>}
-                </div>
-              )}
 
               {/* Email/Username */}
               <div>
@@ -507,11 +463,9 @@ export default function LoginPage({ initialTab = "login" }) {
                   <label style={{ fontSize: "12px", fontWeight: 500, color: "#4a4844", letterSpacing: "0.02em", fontFamily: "'JetBrains Mono', monospace" }}>
                     PASSWORD
                   </label>
-                  {tab === "login" && (
-                    <button style={{ fontSize: "11.5px", color: "#1D9E75", background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      Forgot?
-                    </button>
-                  )}
+                  <button style={{ fontSize: "11.5px", color: "#1D9E75", background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Forgot?
+                  </button>
                 </div>
                 <div style={{ position: "relative" }}>
                   <input
@@ -538,7 +492,6 @@ export default function LoginPage({ initialTab = "login" }) {
                   </button>
                 </div>
                 {errors.password && <p style={{ fontSize: "11px", color: "#e05050", marginTop: "5px", fontFamily: "'JetBrains Mono', monospace" }}>{errors.password}</p>}
-                {tab === "signup" && <StrengthMeter password={password} />}
               </div>
 
               {/* Submit */}

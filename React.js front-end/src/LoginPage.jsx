@@ -247,7 +247,7 @@ function StrengthMeter({ password }) {
 /* ── Main Login Page ── */
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -263,7 +263,7 @@ export default function LoginPage() {
 
   const validate = () => {
     const e = {};
-    if (!email.trim()) e.email = "Enter your username/email";
+    if (!usernameOrEmail.trim()) e.username = "Enter your username or email";
     if (password.length < 6) e.password = "At least 6 characters";
     return e;
   };
@@ -276,7 +276,7 @@ export default function LoginPage() {
 
     try {
       const res = await axios.post(`${API_AUTH}/login`, {
-        username: email.trim(),
+        username: usernameOrEmail.trim(),
         password,
       });
       localStorage.setItem("token", res.data.token);
@@ -430,25 +430,26 @@ export default function LoginPage() {
             {/* Fields */}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-              {/* Email/Username */}
+              {/* Username or Email */}
               <div>
                 <label style={{ fontSize: "12px", fontWeight: 500, color: "#4a4844", letterSpacing: "0.02em", display: "block", marginBottom: "7px", fontFamily: "'JetBrains Mono', monospace" }}>
                   USERNAME OR EMAIL
                 </label>
                 <div style={{ position: "relative" }}>
                   <input
-                    className={`login-input${errors.email ? " error" : ""}`}
+                    className={`login-input${errors.username ? " error" : ""}`}
                     type="text"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: "", root: "" })); }}
+                    placeholder="janesmith or you@example.com"
+                    value={usernameOrEmail}
+                    onChange={e => { setUsernameOrEmail(e.target.value.toLowerCase().replace(/\s/g, "")); setErrors(p => ({ ...p, username: "", root: "" })); }}
+                    style={{ paddingLeft: "14px" }}
                   />
                   <svg style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "#333330", pointerEvents: "none", transition: "color 0.2s" }} className="input-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <rect x="1.5" y="3.5" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-                    <path d="M1.5 6l6 4 6-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    <path d="M1.5 4a2 2 0 012-2h8a2 2 0 012 2v7a2 2 0 01-2 2h-8a2 2 0 01-2-2V4z" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M1.5 5.5l5 3 5-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                {errors.email && <p style={{ fontSize: "11px", color: "#e05050", marginTop: "5px", fontFamily: "'JetBrains Mono', monospace" }}>{errors.email}</p>}
+                {errors.username && <p style={{ fontSize: "11px", color: "#e05050", marginTop: "5px", fontFamily: "'JetBrains Mono', monospace" }}>{errors.username}</p>}
               </div>
 
               {/* Password */}

@@ -383,6 +383,7 @@ export default function RegisterPage() {
       setLoading(true);
       try {
         const res = await axios.post(`${API_AUTH}/register`, {
+          email: email.trim(),
           username: username.trim(),
           password,
         });

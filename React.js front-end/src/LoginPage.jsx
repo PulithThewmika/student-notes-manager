@@ -245,9 +245,12 @@ function StrengthMeter({ password }) {
 }
 
 /* ── Main Login Page ── */
-export default function LoginPage() {
+export default function LoginPage({ initialTab = "login" }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("login"); // "login" | "signup"
+  const tab = initialTab;
+  const setTab = (newTab) => {
+    navigate(newTab === "login" ? "/login" : "/register");
+  };
   const [email, setEmail] = useState(""); // Using email field as username for the backend API
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");

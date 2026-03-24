@@ -273,11 +273,14 @@ export default function LandingPage() {
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <a href="#features" className="nav-link">Features</a>
           <a href="#how" className="nav-link">How it works</a>
-          <button className="cta-primary" onClick={() => navigate("/login")} style={{ padding: "9px 20px", fontSize: "13px" }}>
-            Open app <ArrowRight />
+          <button className="nav-link" onClick={() => navigate("/login")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13.5px", fontWeight: 500 }}>
+            Sign in
+          </button>
+          <button className="cta-primary" onClick={() => navigate("/register")} style={{ padding: "9px 20px", fontSize: "13px" }}>
+            Sign up <ArrowRight />
           </button>
         </div>
       </nav>
@@ -391,7 +394,7 @@ export default function LandingPage() {
 
           {/* CTA row */}
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button className="cta-primary" onClick={() => navigate("/login")}>
+            <button className="cta-primary" onClick={() => navigate("/register")}>
               Start taking notes <ArrowRight />
             </button>
             <a href="#features" className="cta-ghost">

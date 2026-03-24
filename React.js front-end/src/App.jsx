@@ -1,10 +1,23 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { Navigate } from "react-router-dom";
 import axios from "axios";
 
-let API_BASE = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000/api/notes";
-if (import.meta.env.VITE_AZURE_BACKEND && !import.meta.env.VITE_AZURE_BACKEND.endsWith('/api/notes')) {
-  API_BASE = `${import.meta.env.VITE_AZURE_BACKEND.replace(/\/$/, '')}/api/notes`;
+let API_ROOT = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000";
+if (API_ROOT.endsWith("/api/notes")) {
+  API_ROOT = API_ROOT.replace(/\/api\/notes\/?$/, "");
 }
+API_ROOT = API_ROOT.replace(/\/$/, "");
+const API_NOTES = `${API_ROOT}/api/notes`;
+const API_AUTH = `${API_ROOT}/api/auth`;
+
+/* ── Axios interceptor: attach JWT to every request ── */
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 /* ── Google Fonts ── */
 const fontLink = document.createElement("link");
@@ -34,9 +47,14 @@ const globalCSS = `
     from { opacity: 1; }
     to   { opacity: 0; transform: translateX(12px); }
   }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
   .note-enter  { animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1) both; }
   .toast-enter { animation: slideInRight 0.25s cubic-bezier(0.22,1,0.36,1) both; }
   .toast-exit  { animation: fadeOut 0.25s ease forwards; }
+  .auth-card   { animation: fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both; }
   input:focus, textarea:focus {
     outline: none;
     border-color: #1D9E75 !important;
@@ -94,6 +112,17 @@ const NotesEmptyIcon = () => (
     <path d="M5 10h10M5 6h10M5 14h6" stroke="#b8b6b0" strokeWidth="1.6" strokeLinecap="round"/>
   </svg>
 );
+const LogoutIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const UserIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M2 14c0-2.761 2.686-5 6-5s6 2.239 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
 
 /* ── Toast ── */
 function useToast() {
@@ -142,6 +171,7 @@ function ToastStack({ toasts }) {
     </div>
   );
 }
+
 
 /* ── Note Card ── */
 function NoteCard({ note, onDelete, index }) {
@@ -440,6 +470,10 @@ function WelcomeLoader() {
 
 /* ── App ── */
 export default function App() {
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
+  });
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
@@ -447,43 +481,54 @@ export default function App() {
   const [search, setSearch] = useState("");
   const { toasts, push } = useToast();
 
-  // Handle UUID retrieval or generation
-  const getUserId = () => {
-    let userId = localStorage.getItem("userId");
-    if (!userId) {
-      userId = crypto.randomUUID();
-      localStorage.setItem("userId", userId);
-    }
-    return userId;
+  const handleAuth = (newToken, newUser) => {
+    setToken(newToken);
+    setUser(newUser);
   };
 
-  useEffect(() => { 
-    // Show splash screen for at least 1.8 seconds to display the welcome animation
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    setNotes([]);
+    push("Signed out");
+  };
+
+  useEffect(() => {
+    if (!token) {
+      setShowSplash(false);
+      setLoading(false);
+      return;
+    }
     Promise.all([
       fetchNotes(),
       new Promise(resolve => setTimeout(resolve, 1800))
     ]).then(() => {
       setShowSplash(false);
     });
-  }, []);
+  }, [token]);
 
   const fetchNotes = async () => {
     setLoading(true);
-    const userId = getUserId();
     try {
-      const res = await axios.get(`${API_BASE}?userId=${encodeURIComponent(userId)}`);
+      const res = await axios.get(API_NOTES);
       setNotes(res.data);
-    } catch {
-      push("Failed to load notes", "error");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        handleLogout();
+        push("Session expired, please sign in again", "error");
+      } else {
+        push("Failed to load notes", "error");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const addNote = async (note) => {
-    const userId = getUserId();
     try {
-      const res = await axios.post(API_BASE, { ...note, userId });
+      const res = await axios.post(API_NOTES, note);
       setNotes(prev => [res.data, ...prev]);
       push("Note added successfully");
       return true;
@@ -494,9 +539,8 @@ export default function App() {
   };
 
   const deleteNote = async (id) => {
-    const userId = getUserId();
     try {
-      await axios.delete(`${API_BASE}/${id}?userId=${encodeURIComponent(userId)}`);
+      await axios.delete(`${API_NOTES}/${id}`);
       setNotes(prev => prev.filter(n => n.id !== id));
       push("Note deleted");
     } catch {
@@ -514,6 +558,11 @@ export default function App() {
     );
 
   const importantCount = notes.filter(n => n.isImportant).length;
+
+  /* ── No token → show login page ── */
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (showSplash) {
     return (
@@ -556,7 +605,8 @@ export default function App() {
             </span>
           </div>
 
-          <div style={{ display: "flex", gap: "6px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Filter buttons */}
             {[
               { key: "all",       label: "All",       count: notes.length },
               { key: "important", label: "Important", count: importantCount },
@@ -587,6 +637,42 @@ export default function App() {
                 </span>
               </button>
             ))}
+
+            {/* Divider */}
+            <div style={{ width: "1px", height: "24px", background: "#e8e6e0", margin: "0 4px" }} />
+
+            {/* User badge */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              padding: "5px 12px",
+              background: "#faf9f6",
+              border: "1px solid #e8e6e0",
+              borderRadius: "8px",
+              fontSize: "12.5px", fontWeight: 500, color: "#706e68",
+            }}>
+              <UserIcon />
+              {user?.username}
+            </div>
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              onMouseEnter={e => { e.currentTarget.style.background = "#fff1f0"; e.currentTarget.style.borderColor = "#ffc9c9"; e.currentTarget.style.color = "#c0392b"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "#e8e6e0"; e.currentTarget.style.color = "#9e9c96"; }}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                background: "transparent",
+                border: "1px solid #e8e6e0",
+                borderRadius: "8px",
+                padding: "5px 11px",
+                fontSize: "12.5px", fontWeight: 500,
+                color: "#9e9c96",
+                transition: "all 0.15s",
+              }}
+            >
+              <LogoutIcon />
+              Sign out
+            </button>
           </div>
         </header>
 

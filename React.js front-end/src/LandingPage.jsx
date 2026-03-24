@@ -668,8 +668,8 @@ export default function LandingPage() {
           <p style={{ fontSize: "15px", color: "#4a4844", marginBottom: "36px", lineHeight: 1.6 }}>
             Open the app and start capturing what matters.
           </p>
-          <button className="cta-primary" onClick={() => navigate("/login")} style={{ fontSize: "15px", padding: "15px 32px" }}>
-            Open Notes app <ArrowRight />
+          <button className="cta-primary" onClick={() => navigate("/register")} style={{ fontSize: "15px", padding: "15px 32px" }}>
+            Get started free <ArrowRight />
           </button>
         </div>
       </section>

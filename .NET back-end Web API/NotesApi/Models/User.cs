@@ -11,6 +11,9 @@ public class User
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
     [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;
 

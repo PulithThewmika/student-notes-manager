@@ -17,8 +17,8 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse?> RegisterAsync(AuthInput input)
     {
-        if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrWhiteSpace(input.Password))
-            throw new ArgumentException("Username and password are required.");
+        if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrWhiteSpace(input.Password) || string.IsNullOrWhiteSpace(input.Email))
+            throw new ArgumentException("Email, username, and password are required.");
         
         if (input.Username.Length < 3)
             throw new ArgumentException("Username must be at least 3 characters.");
@@ -26,12 +26,13 @@ public class AuthService : IAuthService
         if (input.Password.Length < 6)
             throw new ArgumentException("Password must be at least 6 characters.");
 
-        var existing = await _usersCollection.Find(u => u.Username == input.Username).FirstOrDefaultAsync();
+        var existing = await _usersCollection.Find(u => u.Username == input.Username || u.Email == input.Email).FirstOrDefaultAsync();
         if (existing != null)
-            throw new InvalidOperationException("Username already taken.");
+            throw new InvalidOperationException("Username or email already taken.");
 
         var user = new User
         {
+            Email = input.Email,
             Username = input.Username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(input.Password)
         };
@@ -49,9 +50,9 @@ public class AuthService : IAuthService
     public async Task<AuthResponse?> LoginAsync(AuthInput input)
     {
         if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrWhiteSpace(input.Password))
-            throw new ArgumentException("Username and password are required.");
+            throw new ArgumentException("Username/Email and password are required.");
 
-        var user = await _usersCollection.Find(u => u.Username == input.Username).FirstOrDefaultAsync();
+        var user = await _usersCollection.Find(u => u.Username == input.Username || u.Email == input.Username).FirstOrDefaultAsync();
         if (user == null || !BCrypt.Net.BCrypt.Verify(input.Password, user.PasswordHash))
             return null; // Return null on invalid credentials
 

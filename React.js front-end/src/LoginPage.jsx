@@ -401,19 +401,13 @@ export default function LoginPage() {
             lineHeight: 1.1, letterSpacing: "-0.03em",
             textAlign: "center", marginBottom: "8px",
           }}>
-            {tab === "login" ? (
-              <>Sign in to <span style={{ color: "#1D9E75", fontStyle: "italic" }}>Notes</span></>
-            ) : (
-              <>Create your <span style={{ color: "#1D9E75", fontStyle: "italic" }}>account</span></>
-            )}
+            Sign in to <span style={{ color: "#1D9E75", fontStyle: "italic" }}>Notes</span>
           </h1>
           <p style={{
             fontSize: "13.5px", color: "#4a4844", textAlign: "center",
             marginBottom: "32px", lineHeight: 1.6,
           }}>
-            {tab === "login"
-              ? "Your notes are waiting for you."
-              : "Start capturing ideas in seconds."}
+            Your notes are waiting for you.
           </p>
 
           {/* Card */}
@@ -546,17 +540,13 @@ export default function LoginPage() {
 
           </div>
 
-          {/* Footer micro text */}
           <p style={{
             textAlign: "center", marginTop: "20px",
             fontSize: "11.5px", color: "#2a2a26",
             fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.7,
           }}>
-            {tab === "login" ? (
-              <>No account? <button onClick={() => setTab("signup")} style={{ background: "none", border: "none", cursor: "pointer", color: "#1D9E75", fontSize: "11.5px", fontFamily: "'JetBrains Mono', monospace" }}>Sign up free</button></>
-            ) : (
-              <>By signing up you agree to our <span style={{ color: "#3a3835" }}>Terms & Privacy</span>.</>
-            )}
+            No account?{" "}
+            <button onClick={() => navigate("/register")} style={{ background: "none", border: "none", cursor: "pointer", color: "#1D9E75", fontSize: "11.5px", fontFamily: "'JetBrains Mono', monospace" }}>Sign up free</button>
           </p>
         </div>
 

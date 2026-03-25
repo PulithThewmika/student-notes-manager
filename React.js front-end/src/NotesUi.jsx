@@ -325,7 +325,7 @@ const genId = () => Date.now() + Math.random();
 
 /* ── SVG Icons ── */
 const I = {
-  logo: () => <svg width="26" height="26" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#1D9E75"/><rect x="6" y="6" width="7" height="7" rx="2" fill="white"/><rect x="15" y="6" width="7" height="7" rx="2" fill="white" opacity="0.55"/><rect x="6" y="15" width="7" height="7" rx="2" fill="white" opacity="0.55"/><rect x="15" y="15" width="7" height="7" rx="2" fill="white" opacity="0.25"/></svg>,
+  logo: () => <img src="/NOVA.png" alt="NOVA Logo" style={{ width: "40px", height: "auto", borderRadius: "8px" }} />,
   plus: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
   search: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5"/><path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   notes: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="13" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h5M5 9h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
@@ -877,9 +877,6 @@ export default function NotesUi() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
               {I.logo()}
-              {!sidebarCollapsed && (
-                <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>Notes</span>
-              )}
             </div>
             {!sidebarCollapsed && (
               <button className="icon-btn" onClick={() => setSidebarCollapsed(true)}>{I.collapse()}</button>

@@ -112,7 +112,7 @@ function useReveal() {
 function FloatingNote({ title, desc, tag, delay, animation, style }) {
   return (
     <div style={{
-      animation: `${animation} ${3.5 + Math.random()}s ease-in-out infinite`,
+      animation: `${animation} ${3.5 + (0.5)}s ease-in-out infinite`,
       animationDelay: `${delay}s`,
       ...style,
     }}>
@@ -137,7 +137,7 @@ function FloatingNote({ title, desc, tag, delay, animation, style }) {
           borderTop: `1px solid ${tag === "important" ? "var(--accent-dim)" : "var(--border)"}`,
           fontSize: "10px", color: "var(--text4)",
           fontFamily: "'JetBrains Mono', monospace",
-        }}>#0{Math.floor(Math.random() * 9) + 1}0{Math.floor(Math.random() * 9) + 1}</div>
+        }}>#0{Math.abs(title.length % 9) + 1}0{Math.abs((desc.length) % 9) + 1}</div>
       </div>
     </div>
   );
@@ -186,6 +186,39 @@ function Feature({ icon, title, desc, delay }) {
   );
 }
 
+function StepCard({ step, index }) {
+  const ref = useReveal();
+  return (
+    <div
+      ref={ref}
+      className="reveal"
+      style={{
+        transitionDelay: `${index * 120}ms`,
+        padding: "0 32px",
+        position: "relative", zIndex: 1,
+        borderRight: index < 2 ? "1px solid var(--border)" : "none",
+        textAlign: "center",
+      }}
+    >
+      <div style={{
+        width: "52px", height: "52px", borderRadius: "50%",
+        background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        margin: "0 auto 24px",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "13px", fontWeight: 500, color: "var(--accent)",
+      }}>
+        {step.num}
+      </div>
+      <h3 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text)", marginBottom: "10px", letterSpacing: "-0.02em" }}>
+        {step.title}
+      </h3>
+      <p style={{ fontSize: "13px", color: "var(--text3)", lineHeight: 1.65 }}>
+        {step.desc}
+      </p>
+    </div>
+  );
+}
 /* ── Main Landing Page ── */
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -493,40 +526,9 @@ export default function LandingPage() {
               { num: "01", title: "Open the app", desc: "Hit the button. The interface loads instantly — no login, no onboarding walls." },
               { num: "02", title: "Write your note", desc: "Enter a title and description. Toggle important if it matters. Submit." },
               { num: "03", title: "Stay on top", desc: "Search, filter by importance, and delete what you no longer need." },
-            ].map((step, i) => {
-              const ref = useReveal();
-              return (
-                <div
-                  key={i}
-                  ref={ref}
-                  className="reveal"
-                  style={{
-                    transitionDelay: `${i * 120}ms`,
-                    padding: "0 32px",
-                    position: "relative", zIndex: 1,
-                    borderRight: i < 2 ? "1px solid var(--border)" : "none",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{
-                    width: "52px", height: "52px", borderRadius: "50%",
-                    background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 24px",
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: "13px", fontWeight: 500, color: "var(--accent)",
-                  }}>
-                    {step.num}
-                  </div>
-                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text)", marginBottom: "10px", letterSpacing: "-0.02em" }}>
-                    {step.title}
-                  </h3>
-                  <p style={{ fontSize: "13px", color: "var(--text3)", lineHeight: 1.65 }}>
-                    {step.desc}
-                  </p>
-                </div>
-              );
-            })}
+            ].map((step, i) => (
+              <StepCard key={i} step={step} index={i} />
+            ))}
           </div>
         </div>
       </section>

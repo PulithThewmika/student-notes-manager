@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "./ThemeContext";
+import { useNavigate } from "react-router-dom";
 
 /* ── Font injection ── */
 (() => {
@@ -352,6 +353,8 @@ const I = {
   collapse: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   expand: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   palette: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="5" cy="5.5" r="1" fill="currentColor"/><circle cx="9" cy="5.5" r="1" fill="currentColor"/><circle cx="7" cy="9" r="1" fill="currentColor"/></svg>,
+  user: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4.5" r="3.5" stroke="currentColor" strokeWidth="1.4"/><path d="M1.5 13.5v-1.5a3.5 3.5 0 013.5-3.5h5a3.5 3.5 0 013.5 3.5v1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  logout: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M5.5 13.5h-3a1 1 0 01-1-1v-10a1 1 0 011-1h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M10.5 4.5L13 7.5l-2.5 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 7.5h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
 
 /* ── Toast component ── */
@@ -361,7 +364,7 @@ function Toast({ msg, icon, onDone }) {
     const t1 = setTimeout(() => setOut(true), 2500);
     const t2 = setTimeout(() => onDone(), 2800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  }, [onDone]);
   return (
     <div className={`toast${out ? " out" : ""}`}>
       <span style={{ fontSize: "16px" }}>{icon || "✦"}</span>
@@ -485,8 +488,12 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
   const colorRef = useRef(null);
 
   useEffect(() => {
-    if (note) { setTitle(note.title); setContent(note.content); }
-  }, [note?.id]);
+    if (note) { 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTitle(note.title); 
+      setContent(note.content); 
+    }
+  }, [note]);
 
   useEffect(() => {
     if (!note) return;
@@ -495,7 +502,7 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
       onUpdate(note.id, { title, content, updatedAt: new Date() });
     }, 600);
     return () => clearTimeout(saveTimer.current);
-  }, [title, content]);
+  }, [title, content, note, onUpdate]);
 
   useEffect(() => {
     const h = (e) => { if (colorRef.current && !colorRef.current.contains(e.target)) setShowColors(false); };
@@ -604,7 +611,7 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
         />
 
         {/* Checklist section */}
-        {(note.checklist.length > 0 || true) && (
+        {note.checklist && (
           <div style={{ marginTop: "20px", borderTop: "1px solid var(--border)", paddingTop: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
               <span style={{ color: "var(--accent)" }}>{I.checklist()}</span>
@@ -690,6 +697,7 @@ export default function NotesUi() {
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("grid"); // grid | list | cols
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -698,7 +706,6 @@ export default function NotesUi() {
   const [toast, setToast] = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [sortBy, setSortBy] = useState("updated"); // updated | created | title
-  const toastRef = useRef(null);
 
   const showToast = useCallback((msg, icon) => {
     setToast({ msg, icon, key: Date.now() });
@@ -975,7 +982,7 @@ export default function NotesUi() {
           </div>
 
           {/* Sidebar footer */}
-          <div style={{ padding: "10px", borderTop: "1px solid var(--border)" }}>
+          <div style={{ padding: "10px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "2px" }}>
             <button
               className={`nav-item${activeSection === "trash" ? " active" : ""}`}
               onClick={() => { setActiveSection("trash"); setActiveTag(null); }}
@@ -990,9 +997,21 @@ export default function NotesUi() {
               )}
             </button>
 
+            <div style={{ margin: "4px 0", height: "1px", background: "var(--border)", opacity: 0.5 }} />
+
+            <button className="nav-item" title="Profile" onClick={() => showToast("Profile settings coming soon!", "👤")}>
+              <span style={{ color: "var(--text3)" }}>{I.user()}</span>
+              {!sidebarCollapsed && <span>My Profile</span>}
+            </button>
+
             <button className="nav-item" onClick={toggleTheme} title="Toggle theme">
-              <span>{theme === "dark" ? I.sun() : I.moon()}</span>
+              <span style={{ color: "var(--text3)" }}>{theme === "dark" ? I.sun() : I.moon()}</span>
               {!sidebarCollapsed && <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
+            </button>
+
+            <button className="nav-item" title="Log out" style={{ color: "#e05050" }} onClick={() => navigate("/")}>
+              <span style={{ color: "inherit" }}>{I.logout()}</span>
+              {!sidebarCollapsed && <span>Log out</span>}
             </button>
           </div>
         </aside>

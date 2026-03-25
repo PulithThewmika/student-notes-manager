@@ -245,6 +245,7 @@ export default function LandingPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LogoMark />
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <a href="#features" className="nav-link">Features</a>

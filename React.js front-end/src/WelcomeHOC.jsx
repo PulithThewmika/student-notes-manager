@@ -1,4 +1,5 @@
-﻿import { useState, useEffect } from "react";
+﻿/* eslint-disable react/prop-types, no-unused-vars */
+import { useState, useEffect } from "react";
 import NovaNotesWelcome from "./NovaNotesWelcome";
 
 export function withWelcome(Component) {

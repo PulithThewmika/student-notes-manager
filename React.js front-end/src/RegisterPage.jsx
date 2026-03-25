@@ -166,13 +166,7 @@ const G = `
 
 /* ── SVG icons ── */
 const LogoMark = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-    <rect width="28" height="28" rx="8" fill="#1D9E75"/>
-    <rect x="6" y="6" width="7" height="7" rx="2" fill="white"/>
-    <rect x="15" y="6" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
-    <rect x="6" y="15" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
-    <rect x="15" y="15" width="7" height="7" rx="2" fill="white" opacity="0.25"/>
-  </svg>
+  <img src="/NOVA.png" alt="NOVA Logo" style={{ height: "48px", width: "auto", borderRadius: "8px" }} />
 );
 
 const StarBadge = () => (
@@ -441,7 +435,6 @@ export default function RegisterPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => navigate("/")}>
           <LogoMark />
-          <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text)", letterSpacing: "-0.02em" }}>Notes</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <button

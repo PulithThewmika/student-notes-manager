@@ -83,13 +83,7 @@ const StarBadge = () => (
   </svg>
 );
 const LogoMark = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-    <rect width="28" height="28" rx="8" fill="var(--accent)"/>
-    <rect x="6" y="6" width="7" height="7" rx="2" fill="white"/>
-    <rect x="15" y="6" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
-    <rect x="6" y="15" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
-    <rect x="15" y="15" width="7" height="7" rx="2" fill="white" opacity="0.25"/>
-  </svg>
+  <img src="/NOVA.png" alt="NOVA Logo" style={{ height: "48px", width: "auto", borderRadius: "8px" }} />
 );
 
 /* ── Scroll reveal hook ── */
@@ -251,10 +245,6 @@ export default function LandingPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LogoMark />
-          <span style={{ fontSize: "15px", fontWeight: 600, color: "#e8e5de", letterSpacing: "-0.02em" }}>
-            Notes
-          </span>
-        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <a href="#features" className="nav-link">Features</a>
@@ -635,7 +625,6 @@ export default function LandingPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LogoMark />
-          <span style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--text2)", letterSpacing: "-0.02em" }}>Notes</span>
         </div>
         <div style={{ display: "flex", gap: "24px" }}>
           {["Features", "How it works"].map(l => (

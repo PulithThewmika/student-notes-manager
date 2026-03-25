@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTheme } from "./ThemeContext";
 
 /* ── Font injection ── */
 (() => {
@@ -12,64 +13,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 /* ── GLOBAL CSS ── */
 const G = `
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-
-  :root {
-    --bg: #0c0c0a;
-    --bg2: #0f0f0d;
-    --bg3: #131310;
-    --border: #1e1e1b;
-    --border2: #252521;
-    --text: #e8e5de;
-    --text2: #807d76;
-    --text3: #4a4844;
-    --text4: #2a2a26;
-    --accent: #1D9E75;
-    --accent-bg: #0d1f19;
-    --accent-dim: rgba(29,158,117,0.12);
-    --accent-border: rgba(29,158,117,0.3);
-    --sidebar-w: 260px;
-  }
-
-  [data-theme="light"] {
-    --bg: #f8f6f1;
-    --bg2: #ffffff;
-    --bg3: #f2f0eb;
-    --border: #e4e1d8;
-    --border2: #d8d4c8;
-    --text: #1a1916;
-    --text2: #6b6860;
-    --text3: #9b9890;
-    --text4: #c0bdb5;
-    --accent-bg: #e8f7f2;
-    --accent-dim: rgba(29,158,117,0.1);
-    --accent-border: rgba(29,158,117,0.25);
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    min-height: 100vh;
-    overflow: hidden;
-  }
-
-  ::selection { background: rgba(29,158,117,0.3); color: var(--text); }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-
-  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  @keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes popIn { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
-  @keyframes toastIn { from { opacity:0; transform:translateY(16px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
-  @keyframes toastOut { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(8px) scale(0.96); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes pulse2 { 0%,100%{opacity:0.5;} 50%{opacity:1;} }
-  @keyframes shimmer { 0%{background-position:-400px 0;} 100%{background-position:400px 0;} }
-
   .app-layout {
     display: flex;
     height: 100vh;
@@ -746,7 +689,7 @@ export default function NotesUi() {
   const [notes, setNotes] = useState(SEED_NOTES);
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("grid"); // grid | list | cols
-  const [theme, setTheme] = useState("dark");
+  const { theme, toggleTheme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -756,11 +699,6 @@ export default function NotesUi() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sortBy, setSortBy] = useState("updated"); // updated | created | title
   const toastRef = useRef(null);
-
-  // Apply theme
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
-  }, [theme]);
 
   const showToast = useCallback((msg, icon) => {
     setToast({ msg, icon, key: Date.now() });
@@ -1052,7 +990,7 @@ export default function NotesUi() {
               )}
             </button>
 
-            <button className="nav-item" onClick={() => setTheme(t => t === "dark" ? "light" : "dark")} title="Toggle theme">
+            <button className="nav-item" onClick={toggleTheme} title="Toggle theme">
               <span>{theme === "dark" ? I.sun() : I.moon()}</span>
               {!sidebarCollapsed && <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
             </button>

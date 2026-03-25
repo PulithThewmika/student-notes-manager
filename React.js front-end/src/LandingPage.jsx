@@ -11,65 +11,15 @@ import { useNavigate } from "react-router-dom";
 
 /* ── Global CSS ── */
 const G = `
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: #0c0c0a;
-    color: #e8e5de;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  ::selection { background: #1D9E7555; color: #e8e5de; }
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a26; border-radius: 4px; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes floatA {
-    0%,100% { transform: translateY(0px) rotate(0deg); }
-    50%      { transform: translateY(-14px) rotate(1.5deg); }
-  }
-  @keyframes floatB {
-    0%,100% { transform: translateY(0px) rotate(-1deg); }
-    50%      { transform: translateY(-10px) rotate(0.5deg); }
-  }
-  @keyframes floatC {
-    0%,100% { transform: translateY(0px) rotate(1deg); }
-    50%      { transform: translateY(-18px) rotate(-1deg); }
-  }
-  @keyframes pulse {
-    0%,100% { opacity: 0.5; }
-    50%      { opacity: 1; }
-  }
-  @keyframes ticker {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  @keyframes gridFade {
-    from { opacity: 0; transform: scale(0.98); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
   .nav-link {
-    font-size: 13.5px; font-weight: 500; color: #807d76;
+    font-size: 13.5px; font-weight: 500; color: var(--text2);
     text-decoration: none; transition: color 0.2s; letter-spacing: -0.01em;
   }
-  .nav-link:hover { color: #e8e5de; }
+  .nav-link:hover { color: var(--text); }
 
   .cta-primary {
     display: inline-flex; align-items: center; gap: 8px;
-    background: #1D9E75; color: #fff;
+    background: var(--accent); color: #fff;
     border: none; border-radius: 10px;
     padding: 13px 26px;
     font-size: 14px; font-weight: 600;
@@ -77,42 +27,42 @@ const G = `
     cursor: pointer; transition: background 0.2s, transform 0.15s;
     letter-spacing: -0.01em; text-decoration: none;
   }
-  .cta-primary:hover { background: #17876a; transform: translateY(-1px); }
+  .cta-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
   .cta-primary:active { transform: scale(0.97); }
 
   .cta-ghost {
     display: inline-flex; align-items: center; gap: 8px;
-    background: transparent; color: #807d76;
-    border: 1px solid #2a2a26; border-radius: 10px;
+    background: transparent; color: var(--text2);
+    border: 1px solid var(--border2); border-radius: 10px;
     padding: 13px 26px;
     font-size: 14px; font-weight: 500;
     font-family: 'Plus Jakarta Sans', sans-serif;
     cursor: pointer; transition: all 0.2s;
     letter-spacing: -0.01em; text-decoration: none;
   }
-  .cta-ghost:hover { border-color: #444440; color: #e8e5de; transform: translateY(-1px); }
+  .cta-ghost:hover { border-color: var(--text3); color: var(--text); transform: translateY(-1px); }
 
   .feature-card {
-    background: #131310;
-    border: 1px solid #222220;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
     border-radius: 16px;
     padding: 28px;
     transition: border-color 0.2s, transform 0.2s;
   }
-  .feature-card:hover { border-color: #1D9E7544; transform: translateY(-3px); }
+  .feature-card:hover { border-color: var(--accent-border); transform: translateY(-3px); }
 
   .ticker-wrap { overflow: hidden; white-space: nowrap; }
   .ticker-inner { display: inline-flex; gap: 0; animation: ticker 28s linear infinite; }
 
   .note-mock {
-    background: #161613;
-    border: 1px solid #262622;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
     border-radius: 14px;
     padding: 18px 20px;
     transition: border-color 0.2s;
   }
-  .note-mock:hover { border-color: #1D9E7555; }
-  .note-mock.imp { border-color: #1D9E7555; background: #0d1f19; }
+  .note-mock:hover { border-color: var(--accent-border); }
+  .note-mock.imp { border-color: var(--accent-border); background: var(--accent-bg); }
 `;
 
 /* ── Inline SVG icons ── */
@@ -123,18 +73,18 @@ const ArrowRight = () => (
 );
 const CheckCircle = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="7" fill="#1D9E7522" stroke="#1D9E75" strokeWidth="1.2"/>
-    <path d="M5 8l2 2 4-4" stroke="#1D9E75" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="8" cy="8" r="7" fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="1.2"/>
+    <path d="M5 8l2 2 4-4" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 const StarBadge = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-    <path d="M6 1l1.4 2.8 3.1.45-2.25 2.2.53 3.1L6 8.1 3.22 9.55l.53-3.1L1.5 4.25l3.1-.45L6 1z" fill="#1D9E75"/>
+    <path d="M6 1l1.4 2.8 3.1.45-2.25 2.2.53 3.1L6 8.1 3.22 9.55l.53-3.1L1.5 4.25l3.1-.45L6 1z" fill="var(--accent)"/>
   </svg>
 );
 const LogoMark = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-    <rect width="28" height="28" rx="8" fill="#1D9E75"/>
+    <rect width="28" height="28" rx="8" fill="var(--accent)"/>
     <rect x="6" y="6" width="7" height="7" rx="2" fill="white"/>
     <rect x="15" y="6" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
     <rect x="6" y="15" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
@@ -168,24 +118,24 @@ function FloatingNote({ title, desc, tag, delay, animation, style }) {
     }}>
       <div className={`note-mock${tag === "important" ? " imp" : ""}`}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-          <span style={{ fontSize: "12.5px", fontWeight: 600, color: tag === "important" ? "#1D9E75" : "#c8c5be", lineHeight: 1.3 }}>
+          <span style={{ fontSize: "12.5px", fontWeight: 600, color: tag === "important" ? "var(--accent)" : "var(--text)", lineHeight: 1.3 }}>
             {title}
           </span>
           {tag === "important" && (
             <span style={{
-              fontSize: "9px", fontWeight: 600, background: "#1D9E7522",
-              color: "#1D9E75", padding: "2px 7px", borderRadius: "20px",
+              fontSize: "9px", fontWeight: 600, background: "var(--accent-dim)",
+              color: "var(--accent)", padding: "2px 7px", borderRadius: "20px",
               fontFamily: "'JetBrains Mono', monospace", flexShrink: 0, marginLeft: "8px",
             }}>
               important
             </span>
           )}
         </div>
-        <p style={{ fontSize: "11px", color: "#4a4844", lineHeight: 1.55 }}>{desc}</p>
+        <p style={{ fontSize: "11px", color: "var(--text3)", lineHeight: 1.55 }}>{desc}</p>
         <div style={{
           marginTop: "10px", paddingTop: "9px",
-          borderTop: `1px solid ${tag === "important" ? "#1D9E7522" : "#1e1e1b"}`,
-          fontSize: "10px", color: "#333330",
+          borderTop: `1px solid ${tag === "important" ? "var(--accent-dim)" : "var(--border)"}`,
+          fontSize: "10px", color: "var(--text4)",
           fontFamily: "'JetBrains Mono', monospace",
         }}>#0{Math.floor(Math.random() * 9) + 1}0{Math.floor(Math.random() * 9) + 1}</div>
       </div>
@@ -198,14 +148,14 @@ function Ticker() {
   const items = ["Capture ideas", "Stay organised", "Mark what matters", "Search instantly", "Built for speed", "Simple by design"];
   const doubled = [...items, ...items];
   return (
-    <div className="ticker-wrap" style={{ borderTop: "1px solid #1a1a17", borderBottom: "1px solid #1a1a17", padding: "14px 0", overflow: "hidden" }}>
+    <div className="ticker-wrap" style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "14px 0", overflow: "hidden" }}>
       <div className="ticker-inner">
         {doubled.map((item, i) => (
           <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "16px", paddingRight: "48px" }}>
-            <span style={{ fontSize: "12.5px", fontWeight: 500, color: "#3a3835", letterSpacing: "0.04em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>
+            <span style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--text3)", letterSpacing: "0.04em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>
               {item}
             </span>
-            <span style={{ color: "#1D9E75", fontSize: "14px" }}>✦</span>
+            <span style={{ color: "var(--accent)", fontSize: "14px" }}>✦</span>
           </span>
         ))}
       </div>
@@ -220,16 +170,16 @@ function Feature({ icon, title, desc, delay }) {
     <div ref={ref} className="reveal feature-card" style={{ transitionDelay: `${delay}ms` }}>
       <div style={{
         width: "40px", height: "40px", borderRadius: "11px",
-        background: "#1D9E7518", border: "1px solid #1D9E7530",
+        background: "var(--accent-dim)", border: "1px solid var(--accent-border)",
         display: "flex", alignItems: "center", justifyContent: "center",
         marginBottom: "18px",
       }}>
         {icon}
       </div>
-      <h3 style={{ fontSize: "15px", fontWeight: 600, color: "#e8e5de", marginBottom: "8px", letterSpacing: "-0.02em" }}>
+      <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text)", marginBottom: "8px", letterSpacing: "-0.02em" }}>
         {title}
       </h3>
-      <p style={{ fontSize: "13px", color: "#4a4844", lineHeight: 1.65 }}>
+      <p style={{ fontSize: "13px", color: "var(--text3)", lineHeight: 1.65 }}>
         {desc}
       </p>
     </div>
@@ -296,8 +246,8 @@ export default function LandingPage() {
         <div style={{
           position: "absolute", inset: 0, zIndex: 0,
           backgroundImage: `
-            linear-gradient(rgba(29,158,117,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(29,158,117,0.04) 1px, transparent 1px)
+            linear-gradient(var(--accent-dim) 1px, transparent 1px),
+            linear-gradient(90deg, var(--accent-dim) 1px, transparent 1px)
           `,
           backgroundSize: "60px 60px",
           maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%)",
@@ -307,7 +257,7 @@ export default function LandingPage() {
         <div style={{
           position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)",
           width: "600px", height: "300px",
-          background: "radial-gradient(ellipse, rgba(29,158,117,0.08) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%)",
           zIndex: 0, pointerEvents: "none",
         }} />
 
@@ -357,12 +307,12 @@ export default function LandingPage() {
           {/* Badge */}
           <div style={{
             display: "inline-flex", alignItems: "center", gap: "7px",
-            background: "#0d1f19", border: "1px solid #1D9E7544",
+            background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
             borderRadius: "20px", padding: "6px 14px",
             marginBottom: "32px",
           }}>
             <StarBadge />
-            <span style={{ fontSize: "12px", fontWeight: 500, color: "#1D9E75", fontFamily: "'JetBrains Mono', monospace" }}>
+            <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace" }}>
               Simple. Fast. Beautiful.
             </span>
           </div>
@@ -372,20 +322,20 @@ export default function LandingPage() {
             fontSize: "clamp(48px, 7vw, 76px)",
             fontFamily: "'Instrument Serif', serif",
             fontWeight: 400,
-            color: "#e8e5de",
+            color: "var(--text)",
             lineHeight: 1.08,
             letterSpacing: "-0.03em",
             marginBottom: "24px",
           }}>
             Your thoughts,{" "}
-            <span style={{ color: "#1D9E75", fontStyle: "italic" }}>organised</span>
+            <span style={{ color: "var(--accent)", fontStyle: "italic" }}>organised</span>
             <br />at last.
           </h1>
 
           {/* Sub */}
           <p style={{
             fontSize: "17px", fontWeight: 400,
-            color: "#4a4844", lineHeight: 1.7,
+            color: "var(--text3)", lineHeight: 1.7,
             marginBottom: "40px",
             maxWidth: "500px", margin: "0 auto 40px",
           }}>
@@ -409,7 +359,7 @@ export default function LandingPage() {
             flexWrap: "wrap",
           }}>
             {["No account needed", "Instant sync", "Mark important"].map((t, i) => (
-              <span key={i} style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "12.5px", color: "#3a3835" }}>
+              <span key={i} style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "12.5px", color: "var(--text3)" }}>
                 <CheckCircle /> {t}
               </span>
             ))}
@@ -422,10 +372,10 @@ export default function LandingPage() {
           display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
           animation: "pulse 2s ease-in-out infinite", zIndex: 2,
         }}>
-          <span style={{ fontSize: "11px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em" }}>
+          <span style={{ fontSize: "11px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em" }}>
             scroll
           </span>
-          <div style={{ width: "1px", height: "28px", background: "#2a2a26" }} />
+          <div style={{ width: "1px", height: "28px", background: "var(--border2)" }} />
         </div>
       </section>
 
@@ -436,7 +386,7 @@ export default function LandingPage() {
       <section id="features" style={{ padding: "100px 40px", maxWidth: "1100px", margin: "0 auto" }}>
         <div ref={featRef} className="reveal" style={{ textAlign: "center", marginBottom: "64px" }}>
           <span style={{
-            fontSize: "11px", fontWeight: 600, color: "#1D9E75",
+            fontSize: "11px", fontWeight: 600, color: "var(--accent)",
             letterSpacing: "0.1em", textTransform: "uppercase",
             fontFamily: "'JetBrains Mono', monospace",
           }}>
@@ -445,12 +395,12 @@ export default function LandingPage() {
           <h2 style={{
             fontSize: "clamp(32px, 4vw, 48px)",
             fontFamily: "'Instrument Serif', serif",
-            fontWeight: 400, color: "#e8e5de",
+            fontWeight: 400, color: "var(--text)",
             letterSpacing: "-0.025em", lineHeight: 1.15,
             marginTop: "12px",
           }}>
             Everything you need.<br />
-            <span style={{ color: "#3a3835" }}>Nothing you don't.</span>
+            <span style={{ color: "var(--text3)" }}>Nothing you don't.</span>
           </h2>
         </div>
 
@@ -461,44 +411,44 @@ export default function LandingPage() {
         }}>
           <Feature delay={0} icon={
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 5h12M3 9h8M3 13h5" stroke="#1D9E75" strokeWidth="1.6" strokeLinecap="round"/>
+              <path d="M3 5h12M3 9h8M3 13h5" stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round"/>
             </svg>
           } title="Instant capture" desc="Add a note in seconds. Title, description, done. No friction, no folders, no fuss." />
 
           <Feature delay={80} icon={
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="8" cy="8" r="6" stroke="#1D9E75" strokeWidth="1.6"/>
-              <path d="M13 13l3 3" stroke="#1D9E75" strokeWidth="1.6" strokeLinecap="round"/>
+              <circle cx="8" cy="8" r="6" stroke="var(--accent)" strokeWidth="1.6"/>
+              <path d="M13 13l3 3" stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round"/>
             </svg>
           } title="Smart search" desc="Filter your notes in real time as you type. Find anything instantly across all your content." />
 
           <Feature delay={160} icon={
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 2l1.8 3.6 4 .58-2.9 2.83.68 4L9 11.02 5.42 13 6.1 9l-2.9-2.83 4-.58L9 2z" stroke="#1D9E75" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M9 2l1.8 3.6 4 .58-2.9 2.83.68 4L9 11.02 5.42 13 6.1 9l-2.9-2.83 4-.58L9 2z" stroke="var(--accent)" strokeWidth="1.5" strokeLinejoin="round"/>
             </svg>
           } title="Mark important" desc="Flag the notes that matter most. Filter by importance to surface your priorities fast." />
 
           <Feature delay={240} icon={
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="4" width="14" height="11" rx="2.5" stroke="#1D9E75" strokeWidth="1.6"/>
-              <path d="M6 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="#1D9E75" strokeWidth="1.5"/>
-              <path d="M6 9h6M6 12h4" stroke="#1D9E75" strokeWidth="1.4" strokeLinecap="round"/>
+              <rect x="2" y="4" width="14" height="11" rx="2.5" stroke="var(--accent)" strokeWidth="1.6"/>
+              <path d="M6 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="var(--accent)" strokeWidth="1.5"/>
+              <path d="M6 9h6M6 12h4" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round"/>
             </svg>
           } title="Full CRUD API" desc="Powered by a .NET 9 Web API with in-memory store. GET, POST, PUT, and DELETE — all ready." />
 
           <Feature delay={320} icon={
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="7" stroke="#1D9E75" strokeWidth="1.6"/>
-              <path d="M9 6v3l2 2" stroke="#1D9E75" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="9" cy="9" r="7" stroke="var(--accent)" strokeWidth="1.6"/>
+              <path d="M9 6v3l2 2" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           } title="Live feedback" desc="Every action confirms itself. Toast notifications appear and vanish without getting in your way." />
 
           <Feature delay={400} icon={
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="3" width="6" height="6" rx="1.5" stroke="#1D9E75" strokeWidth="1.5"/>
-              <rect x="10" y="3" width="6" height="6" rx="1.5" stroke="#1D9E75" strokeWidth="1.5"/>
-              <rect x="2" y="11" width="6" height="6" rx="1.5" stroke="#1D9E75" strokeWidth="1.5"/>
-              <rect x="10" y="11" width="6" height="6" rx="1.5" stroke="#1D9E75" strokeWidth="1.5" opacity="0.4"/>
+              <rect x="2" y="3" width="6" height="6" rx="1.5" stroke="var(--accent)" strokeWidth="1.5"/>
+              <rect x="10" y="3" width="6" height="6" rx="1.5" stroke="var(--accent)" strokeWidth="1.5"/>
+              <rect x="2" y="11" width="6" height="6" rx="1.5" stroke="var(--accent)" strokeWidth="1.5"/>
+              <rect x="10" y="11" width="6" height="6" rx="1.5" stroke="var(--accent)" strokeWidth="1.5" opacity="0.4"/>
             </svg>
           } title="Clean dashboard" desc="Stats strip, filter pills, responsive 2-col grid. Designed to feel premium, not over-engineered." />
         </div>
@@ -507,14 +457,14 @@ export default function LandingPage() {
       {/* ── HOW IT WORKS ── */}
       <section id="how" style={{
         padding: "80px 40px 100px",
-        borderTop: "1px solid #1a1a17",
-        borderBottom: "1px solid #1a1a17",
-        background: "#0a0a08",
+        borderTop: "1px solid var(--border)",
+        borderBottom: "1px solid var(--border)",
+        background: "var(--bg2)",
       }}>
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
           <div ref={howRef} className="reveal" style={{ textAlign: "center", marginBottom: "64px" }}>
             <span style={{
-              fontSize: "11px", fontWeight: 600, color: "#1D9E75",
+              fontSize: "11px", fontWeight: 600, color: "var(--accent)",
               letterSpacing: "0.1em", textTransform: "uppercase",
               fontFamily: "'JetBrains Mono', monospace",
             }}>
@@ -523,7 +473,7 @@ export default function LandingPage() {
             <h2 style={{
               fontSize: "clamp(30px, 4vw, 44px)",
               fontFamily: "'Instrument Serif', serif",
-              fontWeight: 400, color: "#e8e5de",
+              fontWeight: 400, color: "var(--text)",
               letterSpacing: "-0.025em", lineHeight: 1.2,
               marginTop: "12px",
             }}>
@@ -535,7 +485,7 @@ export default function LandingPage() {
             {/* Connector line */}
             <div style={{
               position: "absolute", top: "32px", left: "calc(16.67% + 16px)", right: "calc(16.67% + 16px)",
-              height: "1px", background: "linear-gradient(90deg, transparent, #1D9E7533, #1D9E7533, transparent)",
+              height: "1px", background: "linear-gradient(90deg, transparent, var(--accent-border), var(--accent-border), transparent)",
               zIndex: 0,
             }} />
 
@@ -554,24 +504,24 @@ export default function LandingPage() {
                     transitionDelay: `${i * 120}ms`,
                     padding: "0 32px",
                     position: "relative", zIndex: 1,
-                    borderRight: i < 2 ? "1px solid #1a1a17" : "none",
+                    borderRight: i < 2 ? "1px solid var(--border)" : "none",
                     textAlign: "center",
                   }}
                 >
                   <div style={{
                     width: "52px", height: "52px", borderRadius: "50%",
-                    background: "#0d1f19", border: "1px solid #1D9E7544",
+                    background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     margin: "0 auto 24px",
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: "13px", fontWeight: 500, color: "#1D9E75",
+                    fontSize: "13px", fontWeight: 500, color: "var(--accent)",
                   }}>
                     {step.num}
                   </div>
-                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#e8e5de", marginBottom: "10px", letterSpacing: "-0.02em" }}>
+                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text)", marginBottom: "10px", letterSpacing: "-0.02em" }}>
                     {step.title}
                   </h3>
-                  <p style={{ fontSize: "13px", color: "#4a4844", lineHeight: 1.65 }}>
+                  <p style={{ fontSize: "13px", color: "var(--text3)", lineHeight: 1.65 }}>
                     {step.desc}
                   </p>
                 </div>
@@ -584,8 +534,8 @@ export default function LandingPage() {
       {/* ── PREVIEW STRIP ── */}
       <section style={{ padding: "100px 40px", maxWidth: "1100px", margin: "0 auto" }}>
         <div style={{
-          background: "#0f0f0d",
-          border: "1px solid #1e1e1b",
+          background: "var(--bg)",
+          border: "1px solid var(--border)",
           borderRadius: "24px",
           padding: "48px",
           display: "grid",
@@ -598,7 +548,7 @@ export default function LandingPage() {
           <div style={{
             position: "absolute", bottom: "-60px", left: "50%", transform: "translateX(-50%)",
             width: "400px", height: "200px",
-            background: "radial-gradient(ellipse, rgba(29,158,117,0.06) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%)",
             pointerEvents: "none",
           }} />
 
@@ -614,8 +564,8 @@ export default function LandingPage() {
               key={i}
               className="note-mock"
               style={n.imp ? {
-                borderColor: "#1D9E7544",
-                background: "#0d1f19",
+                borderColor: "var(--accent-border)",
+                background: "var(--accent-bg)",
                 animationDelay: `${i * 0.15}s`,
                 animation: "gridFade 0.5s ease both",
               } : {
@@ -624,20 +574,20 @@ export default function LandingPage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                <span style={{ fontSize: "12.5px", fontWeight: 600, color: n.imp ? "#1D9E75" : "#c8c5be", lineHeight: 1.3, flex: 1 }}>
+                <span style={{ fontSize: "12.5px", fontWeight: 600, color: n.imp ? "var(--accent)" : "var(--text)", lineHeight: 1.3, flex: 1 }}>
                   {n.title}
                 </span>
                 {n.imp && (
                   <span style={{
-                    fontSize: "9px", fontWeight: 600, background: "#1D9E7520",
-                    color: "#1D9E75", padding: "2px 7px", borderRadius: "20px",
+                    fontSize: "9px", fontWeight: 600, background: "var(--accent-dim)",
+                    color: "var(--accent)", padding: "2px 7px", borderRadius: "20px",
                     fontFamily: "'JetBrains Mono', monospace", marginLeft: "8px", flexShrink: 0,
                   }}>
                     important
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: "11.5px", color: "#3e3c38", lineHeight: 1.6 }}>{n.desc}</p>
+              <p style={{ fontSize: "11.5px", color: "var(--text3)", lineHeight: 1.6 }}>{n.desc}</p>
             </div>
           ))}
         </div>
@@ -652,20 +602,20 @@ export default function LandingPage() {
         <div style={{
           position: "absolute", top: "0", left: "50%", transform: "translateX(-50%)",
           width: "1px", height: "80px",
-          background: "linear-gradient(to bottom, transparent, #1D9E7544)",
+          background: "linear-gradient(to bottom, transparent, var(--accent-border))",
         }} />
         <div ref={ctaRef} className="reveal">
           <h2 style={{
             fontSize: "clamp(36px, 5vw, 58px)",
             fontFamily: "'Instrument Serif', serif",
-            fontWeight: 400, color: "#e8e5de",
+            fontWeight: 400, color: "var(--text)",
             letterSpacing: "-0.03em", lineHeight: 1.1,
             marginBottom: "20px",
           }}>
             Ready to clear<br />
-            <span style={{ color: "#1D9E75", fontStyle: "italic" }}>your mind?</span>
+            <span style={{ color: "var(--accent)", fontStyle: "italic" }}>your mind?</span>
           </h2>
-          <p style={{ fontSize: "15px", color: "#4a4844", marginBottom: "36px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "15px", color: "var(--text3)", marginBottom: "36px", lineHeight: 1.6 }}>
             Open the app and start capturing what matters.
           </p>
           <button className="cta-primary" onClick={() => navigate("/register")} style={{ fontSize: "15px", padding: "15px 32px" }}>
@@ -676,21 +626,21 @@ export default function LandingPage() {
 
       {/* ── FOOTER ── */}
       <footer style={{
-        borderTop: "1px solid #1a1a17",
+        borderTop: "1px solid var(--border)",
         padding: "28px 40px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         flexWrap: "wrap", gap: "12px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LogoMark />
-          <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#3a3835", letterSpacing: "-0.02em" }}>Notes</span>
+          <span style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--text2)", letterSpacing: "-0.02em" }}>Notes</span>
         </div>
         <div style={{ display: "flex", gap: "24px" }}>
           {["Features", "How it works"].map(l => (
             <a key={l} href={`#${l.toLowerCase().replace(" ","-")}`} className="nav-link" style={{ fontSize: "12.5px" }}>{l}</a>
           ))}
         </div>
-        <span style={{ fontSize: "11.5px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace" }}>
+        <span style={{ fontSize: "11.5px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace" }}>
           built with React + .NET 9
         </span>
       </footer>

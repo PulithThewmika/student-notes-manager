@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useTheme } from "./ThemeContext";
 
 let API_ROOT = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000";
 if (API_ROOT.endsWith("/api/notes")) {
@@ -20,20 +21,6 @@ const API_AUTH = `${API_ROOT}/api/auth`;
 })();
 
 const G = `
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: #0c0c0a;
-    color: #e8e5de;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  ::selection { background: #1D9E7555; color: #e8e5de; }
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a26; border-radius: 4px; }
-
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(28px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -77,33 +64,33 @@ const G = `
 
   .reg-input {
     width: 100%;
-    background: #111110;
-    border: 1px solid #252521;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
     border-radius: 10px;
     padding: 13px 16px;
     font-size: 14px;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    color: #e8e5de;
+    color: var(--text);
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
     letter-spacing: -0.01em;
   }
-  .reg-input::placeholder { color: #2e2e2a; }
+  .reg-input::placeholder { color: var(--text4); }
   .reg-input:focus {
-    border-color: #1D9E7566;
-    box-shadow: 0 0 0 3px rgba(29,158,117,0.07);
+    border-color: var(--accent-border);
+    box-shadow: 0 0 0 3px var(--accent-dim);
   }
   .reg-input.error {
     border-color: #e05050 !important;
     box-shadow: 0 0 0 3px rgba(224,80,80,0.07) !important;
   }
   .reg-input.valid {
-    border-color: #1D9E7544;
+    border-color: var(--accent-border);
   }
 
   .cta-primary {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    background: #1D9E75; color: #fff;
+    background: var(--accent); color: #fff;
     border: none; border-radius: 10px;
     padding: 14px 26px;
     font-size: 14px; font-weight: 600;
@@ -111,34 +98,34 @@ const G = `
     cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     letter-spacing: -0.01em; width: 100%;
   }
-  .cta-primary:hover:not(:disabled) { background: #17876a; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(29,158,117,0.22); }
+  .cta-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(29,158,117,0.22); }
   .cta-primary:active:not(:disabled) { transform: scale(0.97); }
   .cta-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
   .cta-ghost {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    background: transparent; color: #807d76;
-    border: 1px solid #252521; border-radius: 10px;
+    background: transparent; color: var(--text2);
+    border: 1px solid var(--border2); border-radius: 10px;
     padding: 14px 26px; font-size: 14px; font-weight: 500;
     font-family: 'Plus Jakarta Sans', sans-serif;
     cursor: pointer; transition: all 0.2s; letter-spacing: -0.01em; width: 100%;
   }
-  .cta-ghost:hover { border-color: #3a3835; color: #e8e5de; }
+  .cta-ghost:hover { border-color: var(--text3); color: var(--text); }
 
   .nav-link {
-    font-size: 13.5px; font-weight: 500; color: #807d76;
+    font-size: 13.5px; font-weight: 500; color: var(--text2);
     text-decoration: none; transition: color 0.2s; letter-spacing: -0.01em;
     background: none; border: none; cursor: pointer;
   }
-  .nav-link:hover { color: #e8e5de; }
+  .nav-link:hover { color: var(--text); }
 
   .note-mock {
-    background: #161613;
-    border: 1px solid #262622;
+    background: var(--bg2);
+    border: 1px solid var(--border);
     border-radius: 13px;
     padding: 15px 17px;
   }
-  .note-mock.imp { border-color: #1D9E7555; background: #0d1f19; }
+  .note-mock.imp { border-color: var(--accent-border); background: var(--accent-bg); }
 
   .step-dot {
     width: 8px; height: 8px; border-radius: 50%;
@@ -179,13 +166,7 @@ const G = `
 
 /* ── SVG icons ── */
 const LogoMark = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-    <rect width="28" height="28" rx="8" fill="#1D9E75"/>
-    <rect x="6" y="6" width="7" height="7" rx="2" fill="white"/>
-    <rect x="15" y="6" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
-    <rect x="6" y="15" width="7" height="7" rx="2" fill="white" opacity="0.55"/>
-    <rect x="15" y="15" width="7" height="7" rx="2" fill="white" opacity="0.25"/>
-  </svg>
+  <img src="/NOVA.png" alt="NOVA Logo" style={{ height: "48px", width: "auto", borderRadius: "8px" }} />
 );
 
 const StarBadge = () => (
@@ -322,6 +303,7 @@ const AVATARS = ["🦊", "🐼", "🐙", "🦋", "🐬", "🦁", "🐸", "🌵"]
 /* ── MAIN ── */
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [step, setStep] = useState(0); // 0=account 1=profile 2=prefs 3=done
   const [dir, setDir] = useState(1);   // 1=forward -1=back
   const [scrolled, setScrolled] = useState(false);
@@ -446,17 +428,35 @@ export default function RegisterPage() {
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         padding: "0 40px", height: "60px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(12,12,10,0.88)" : "transparent",
+        background: scrolled ? "var(--bg-scroll)" : "transparent",
         backdropFilter: scrolled ? "blur(16px)" : "none",
-        borderBottom: scrolled ? "1px solid #1a1a17" : "1px solid transparent",
+        borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
         transition: "all 0.3s ease",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => navigate("/")}>
           <LogoMark />
-          <span style={{ fontSize: "15px", fontWeight: 600, color: "#e8e5de", letterSpacing: "-0.02em" }}>Notes</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <span style={{ fontSize: "12px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace" }}>
+          <button
+            onClick={toggleTheme}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text2)", display: "flex", alignItems: "center",
+              justifyContent: "center", width: "32px", height: "32px",
+              borderRadius: "8px", transition: "all 0.2s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "var(--bg3)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "var(--text2)"; e.currentTarget.style.background = "transparent"; }}
+            title="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.4"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M2.9 2.9l1.1 1.1M10 10l1.1 1.1M2.9 11.1L4 10M10 4l1.1-1.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M12 8.5A5.5 5.5 0 015.5 2a5.5 5.5 0 100 10A5.5 5.5 0 0012 8.5z" stroke="currentColor" strokeWidth="1.4"/></svg>
+            )}
+          </button>
+          
+          <span style={{ fontSize: "12px", color: "var(--text3)", fontFamily: "'JetBrains Mono', monospace" }}>
             Already have an account?
           </span>
           <button className="nav-link" onClick={() => navigate("/login")}>Sign in →</button>

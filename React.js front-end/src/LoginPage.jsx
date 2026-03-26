@@ -135,7 +135,7 @@ const LogoMark = () => (
 
 const StarBadge = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-    <path d="M6 1l1.4 2.8 3.1.45-2.25 2.2.53 3.1L6 8.1 3.22 9.55l.53-3.1L1.5 4.25l3.1-.45L6 1z" fill="#1D9E75"/>
+    <path d="M6 1l1.4 2.8 3.1.45-2.25 2.2.53 3.1L6 8.1 3.22 9.55l.53-3.1L1.5 4.25l3.1-.45L6 1z" fill="var(--accent)"/>
   </svg>
 );
 
@@ -159,8 +159,8 @@ const EyeIcon = ({ open }) => open ? (
 
 const CheckCircle = () => (
   <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style={{ animation: "checkIn 0.3s cubic-bezier(.34,1.56,.64,1) both" }}>
-    <circle cx="7.5" cy="7.5" r="6.5" fill="#1D9E7522" stroke="#1D9E75" strokeWidth="1.2"/>
-    <path d="M4.5 7.5l2 2 4-4" stroke="#1D9E75" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="7.5" cy="7.5" r="6.5" fill="var(--accent)22" stroke="var(--accent)" strokeWidth="1.2"/>
+    <path d="M4.5 7.5l2 2 4-4" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -380,11 +380,11 @@ export default function LoginPage() {
           }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: "7px",
-              background: "#0d1f19", border: "1px solid #1D9E7544",
+              background: "var(--accent-bg)", border: "1px solid var(--accent)44",
               borderRadius: "20px", padding: "6px 14px",
             }}>
               <StarBadge />
-              <span style={{ fontSize: "11.5px", fontWeight: 500, color: "#1D9E75", fontFamily: "'JetBrains Mono', monospace" }}>
+              <span style={{ fontSize: "11.5px", fontWeight: 500, color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace" }}>
                 Welcome back
               </span>
             </div>
@@ -394,14 +394,14 @@ export default function LoginPage() {
           <h1 style={{
             fontSize: "clamp(32px, 4vw, 42px)",
             fontFamily: "'Instrument Serif', serif",
-            fontWeight: 400, color: "#e8e5de",
+            fontWeight: 400, color: "var(--text)",
             lineHeight: 1.1, letterSpacing: "-0.03em",
             textAlign: "center", marginBottom: "8px",
           }}>
-            Sign in to <span style={{ color: "#1D9E75", fontStyle: "italic" }}>Notes</span>
+            Sign in to <span style={{ color: "var(--accent)", fontStyle: "italic" }}>Notes</span>
           </h1>
           <p style={{
-            fontSize: "13.5px", color: "#4a4844", textAlign: "center",
+            fontSize: "13.5px", color: "var(--text3)", textAlign: "center",
             marginBottom: "32px", lineHeight: 1.6,
           }}>
             Your notes are waiting for you.
@@ -409,8 +409,8 @@ export default function LoginPage() {
 
           {/* Card */}
           <div style={{
-            background: "#0f0f0d",
-            border: "1px solid #1e1e1b",
+            background: "var(--bg2)",
+            border: "1px solid var(--border)",
             borderRadius: "20px",
             padding: "32px",
             boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
@@ -429,7 +429,7 @@ export default function LoginPage() {
 
               {/* Username or Email */}
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "#4a4844", letterSpacing: "0.02em", display: "block", marginBottom: "7px", fontFamily: "'JetBrains Mono', monospace" }}>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text3)", letterSpacing: "0.02em", display: "block", marginBottom: "7px", fontFamily: "'JetBrains Mono', monospace" }}>
                   USERNAME OR EMAIL
                 </label>
                 <div style={{ position: "relative" }}>
@@ -441,7 +441,7 @@ export default function LoginPage() {
                     onChange={e => { setUsernameOrEmail(e.target.value.toLowerCase().replace(/\s/g, "")); setErrors(p => ({ ...p, username: "", root: "" })); }}
                     style={{ paddingLeft: "14px" }}
                   />
-                  <svg style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "#333330", pointerEvents: "none", transition: "color 0.2s" }} className="input-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <svg style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text4)", pointerEvents: "none", transition: "color 0.2s" }} className="input-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <path d="M1.5 4a2 2 0 012-2h8a2 2 0 012 2v7a2 2 0 01-2 2h-8a2 2 0 01-2-2V4z" stroke="currentColor" strokeWidth="1.4"/>
                     <path d="M1.5 5.5l5 3 5-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -452,10 +452,10 @@ export default function LoginPage() {
               {/* Password */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
-                  <label style={{ fontSize: "12px", fontWeight: 500, color: "#4a4844", letterSpacing: "0.02em", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text3)", letterSpacing: "0.02em", fontFamily: "'JetBrains Mono', monospace" }}>
                     PASSWORD
                   </label>
-                  <button style={{ fontSize: "11.5px", color: "#1D9E75", background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <button style={{ fontSize: "11.5px", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     Forgot?
                   </button>
                 </div>
@@ -474,11 +474,11 @@ export default function LoginPage() {
                     style={{
                       position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)",
                       background: "none", border: "none", cursor: "pointer",
-                      color: "#333330", display: "flex", padding: "2px",
+                      color: "var(--text4)", display: "flex", padding: "2px",
                       transition: "color 0.2s",
                     }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#807d76"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#333330"}
+                    onMouseEnter={e => e.currentTarget.style.color = "var(--text2)"}
+                    onMouseLeave={e => e.currentTarget.style.color = "var(--text4)"}
                   >
                     <EyeIcon open={showPw} />
                   </button>
@@ -513,7 +513,7 @@ export default function LoginPage() {
             {/* Divider */}
             <div style={{ display: "flex", alignItems: "center", gap: "14px", margin: "24px 0" }}>
               <div className="divider-line" />
-              <span style={{ fontSize: "11px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace", whiteSpace: "nowrap" }}>or continue with</span>
+              <span style={{ fontSize: "11px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace", whiteSpace: "nowrap" }}>or continue with</span>
               <div className="divider-line" />
             </div>
 
@@ -540,11 +540,11 @@ export default function LoginPage() {
 
           <p style={{
             textAlign: "center", marginTop: "20px",
-            fontSize: "11.5px", color: "#2a2a26",
+            fontSize: "11.5px", color: "var(--text4)",
             fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.7,
           }}>
             No account?{" "}
-            <button onClick={() => navigate("/register")} style={{ background: "none", border: "none", cursor: "pointer", color: "#1D9E75", fontSize: "11.5px", fontFamily: "'JetBrains Mono', monospace" }}>Sign up free</button>
+            <button onClick={() => navigate("/register")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: "11.5px", fontFamily: "'JetBrains Mono', monospace" }}>Sign up free</button>
           </p>
         </div>
 
@@ -570,7 +570,7 @@ export default function LoginPage() {
         animation: "pulse 2.5s ease-in-out infinite", zIndex: 10,
         pointerEvents: "none",
       }}>
-        <span style={{ fontSize: "10px", color: "#1e1e1b", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.1em" }}>
+        <span style={{ fontSize: "10px", color: "var(--border)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.1em" }}>
           built with React + .NET 9
         </span>
       </div>

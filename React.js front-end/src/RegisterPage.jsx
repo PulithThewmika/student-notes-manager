@@ -145,23 +145,23 @@ const G = `
 
   .social-btn {
     display: flex; align-items: center; justify-content: center; gap: 9px;
-    background: #111110; border: 1px solid #252521; border-radius: 10px;
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px;
     padding: 11px; font-size: 13px; font-weight: 500;
-    color: #807d76; cursor: pointer; flex: 1;
+    color: var(--text2); cursor: pointer; flex: 1;
     font-family: 'Plus Jakarta Sans', sans-serif;
     transition: border-color 0.2s, color 0.2s, background 0.2s;
   }
-  .social-btn:hover { border-color: #3a3835; color: #e8e5de; background: #161613; }
+  .social-btn:hover { border-color: var(--border2); color: var(--text); background: var(--bg2); }
 
   .avatar-opt {
     width: 44px; height: 44px; border-radius: 50%;
-    border: 2px solid #252521; cursor: pointer;
+    border: 2px solid var(--border2); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     font-size: 20px; transition: border-color 0.2s, transform 0.15s;
-    background: #111110; flex-shrink: 0;
+    background: var(--bg3); flex-shrink: 0;
   }
   .avatar-opt:hover { transform: scale(1.1); }
-  .avatar-opt.selected { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.15); }
+  .avatar-opt.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,158,117,0.15); }
 `;
 
 /* ── SVG icons ── */
@@ -171,7 +171,7 @@ const LogoMark = () => (
 
 const StarBadge = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-    <path d="M6 1l1.4 2.8 3.1.45-2.25 2.2.53 3.1L6 8.1 3.22 9.55l.53-3.1L1.5 4.25l3.1-.45L6 1z" fill="#1D9E75"/>
+    <path d="M6 1l1.4 2.8 3.1.45-2.25 2.2.53 3.1L6 8.1 3.22 9.55l.53-3.1L1.5 4.25l3.1-.45L6 1z" fill="var(--accent)"/>
   </svg>
 );
 
@@ -205,18 +205,18 @@ function FloatingNote({ title, desc, imp, animation, delay, width = 190 }) {
     <div style={{ animation: `${animation} 4s ease-in-out infinite`, animationDelay: `${delay}s`, width }}>
       <div className={`note-mock${imp ? " imp" : ""}`}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-          <span style={{ fontSize: "11px", fontWeight: 600, color: imp ? "#1D9E75" : "#c8c5be", lineHeight: 1.3 }}>
+          <span style={{ fontSize: "11px", fontWeight: 600, color: imp ? "var(--accent)" : "var(--text2)", lineHeight: 1.3 }}>
             {title}
           </span>
           {imp && (
             <span style={{
-              fontSize: "8px", fontWeight: 600, background: "#1D9E7522", color: "#1D9E75",
+              fontSize: "8px", fontWeight: 600, background: "var(--accent)22", color: "var(--accent)",
               padding: "2px 6px", borderRadius: "20px",
               fontFamily: "'JetBrains Mono', monospace", marginLeft: "7px", flexShrink: 0,
             }}>important</span>
           )}
         </div>
-        <p style={{ fontSize: "10px", color: "#4a4844", lineHeight: 1.55 }}>{desc}</p>
+        <p style={{ fontSize: "10px", color: "var(--text3)", lineHeight: 1.55 }}>{desc}</p>
       </div>
     </div>
   );
@@ -235,14 +235,14 @@ function PasswordRules({ password }) {
   return (
     <div style={{
       marginTop: "10px", padding: "12px 14px",
-      background: "#0d0d0b", border: "1px solid #1e1e1b", borderRadius: "9px",
+      background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: "9px",
       display: "flex", flexDirection: "column", gap: "7px",
     }}>
       {PW_RULES.map((r, i) => {
         const ok = r.test(password);
         return (
-          <div key={i} className="check-item" style={{ color: ok ? "#1D9E75" : "#3a3835" }}>
-            <div className="check-dot" style={{ background: ok ? "#1D9E75" : "#252521" }} />
+          <div key={i} className="check-item" style={{ color: ok ? "var(--accent)" : "var(--border2)" }}>
+            <div className="check-dot" style={{ background: ok ? "var(--accent)" : "var(--border2)" }} />
             {r.label}
           </div>
         );
@@ -260,14 +260,14 @@ function StepBar({ current, total }) {
           <div
             className="step-dot"
             style={{
-              background: i < current ? "#1D9E75" : i === current ? "#1D9E75" : "#252521",
+              background: i < current ? "var(--accent)" : i === current ? "var(--accent)" : "var(--border2)",
               width: i === current ? "24px" : "8px",
               borderRadius: i === current ? "4px" : "50%",
               opacity: i < current ? 0.5 : 1,
             }}
           />
           {i < total - 1 && (
-            <div style={{ width: "20px", height: "1px", background: i < current ? "#1D9E7544" : "#1e1e1b" }} />
+            <div style={{ width: "20px", height: "1px", background: i < current ? "var(--accent)44" : "var(--border)" }} />
           )}
         </div>
       ))}
@@ -281,11 +281,11 @@ function Field({ label, hint, children }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
         <label style={{
-          fontSize: "11.5px", fontWeight: 500, color: "#4a4844",
+          fontSize: "11.5px", fontWeight: 500, color: "var(--text3)",
           letterSpacing: "0.05em", textTransform: "uppercase",
           fontFamily: "'JetBrains Mono', monospace",
         }}>{label}</label>
-        {hint && <span style={{ fontSize: "11px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace" }}>{hint}</span>}
+        {hint && <span style={{ fontSize: "11px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace" }}>{hint}</span>}
       </div>
       {children}
     </div>
@@ -518,11 +518,11 @@ export default function RegisterPage() {
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: "7px",
-              background: "#0d1f19", border: "1px solid #1D9E7544",
+              background: "var(--accent-bg)", border: "1px solid var(--accent)44",
               borderRadius: "20px", padding: "6px 14px",
             }}>
               <StarBadge />
-              <span style={{ fontSize: "11.5px", fontWeight: 500, color: "#1D9E75", fontFamily: "'JetBrains Mono', monospace" }}>
+              <span style={{ fontSize: "11.5px", fontWeight: 500, color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace" }}>
                 {step < 3 ? `Step ${step + 1} of 3` : "You're in!"}
               </span>
             </div>
@@ -534,15 +534,15 @@ export default function RegisterPage() {
               <h1 style={{
                 fontSize: "clamp(28px, 3.5vw, 40px)",
                 fontFamily: "'Instrument Serif', serif",
-                fontWeight: 400, color: "#e8e5de",
+                fontWeight: 400, color: "var(--text)",
                 lineHeight: 1.1, letterSpacing: "-0.03em",
                 textAlign: "center", marginBottom: "6px",
               }}>
-                {step === 0 && <>Create your <span style={{ color: "#1D9E75", fontStyle: "italic" }}>account</span></>}
-                {step === 1 && <>Tell us about <span style={{ color: "#1D9E75", fontStyle: "italic" }}>yourself</span></>}
-                {step === 2 && <>Almost <span style={{ color: "#1D9E75", fontStyle: "italic" }}>there</span></>}
+                {step === 0 && <>Create your <span style={{ color: "var(--accent)", fontStyle: "italic" }}>account</span></>}
+                {step === 1 && <>Tell us about <span style={{ color: "var(--accent)", fontStyle: "italic" }}>yourself</span></>}
+                {step === 2 && <>Almost <span style={{ color: "var(--accent)", fontStyle: "italic" }}>there</span></>}
               </h1>
-              <p style={{ fontSize: "13px", color: "#4a4844", textAlign: "center", marginBottom: "28px", lineHeight: 1.6 }}>
+              <p style={{ fontSize: "13px", color: "var(--text3)", textAlign: "center", marginBottom: "28px", lineHeight: 1.6 }}>
                 {step === 0 && "Start with your email and a secure password."}
                 {step === 1 && "Set up your public profile for Notes."}
                 {step === 2 && "Review your preferences and agree to our terms."}
@@ -552,8 +552,8 @@ export default function RegisterPage() {
 
           {/* Card */}
           <div style={{
-            background: "#0f0f0d",
-            border: "1px solid #1e1e1b",
+            background: "var(--bg2)",
+            border: "1px solid var(--border)",
             borderRadius: "20px",
             padding: "32px",
             boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
@@ -565,7 +565,7 @@ export default function RegisterPage() {
                 {/* Step tabs */}
                 <div style={{
                   display: "flex", gap: "0",
-                  background: "#111110", border: "1px solid #1e1e1b",
+                  background: "var(--bg3)", border: "1px solid var(--border)",
                   borderRadius: "10px", padding: "4px", marginBottom: "28px",
                 }}>
                   {steps.map((s, i) => (
@@ -576,8 +576,8 @@ export default function RegisterPage() {
                         flex: 1, padding: "8px 0",
                         fontSize: "12px", fontWeight: 500,
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        background: i === step ? "#1D9E7518" : "transparent",
-                        color: i === step ? "#1D9E75" : i < step ? "#4a4844" : "#2a2a26",
+                        background: i === step ? "var(--accent)18" : "transparent",
+                        color: i === step ? "var(--accent)" : i < step ? "var(--text3)" : "var(--text4)",
                         border: "none", borderRadius: "7px",
                         cursor: i < step ? "pointer" : "default",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
@@ -591,13 +591,13 @@ export default function RegisterPage() {
 
                 {/* Step progress bar */}
                 <div style={{
-                  height: "2px", background: "#1a1a17", borderRadius: "2px",
+                  height: "2px", background: "var(--border)", borderRadius: "2px",
                   marginBottom: "28px", overflow: "hidden",
                 }}>
                   <div style={{
                     height: "100%",
                     width: `${((step) / 2) * 100}%`,
-                    background: "linear-gradient(90deg, #1D9E75, #2dd4a0)",
+                    background: "linear-gradient(90deg, var(--accent), #2dd4a0)",
                     borderRadius: "2px",
                     transition: "width 0.5s cubic-bezier(.25,.46,.45,.94)",
                   }} />
@@ -631,9 +631,9 @@ export default function RegisterPage() {
 
                   {/* Divider */}
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{ flex: 1, height: "1px", background: "#1e1e1b" }} />
-                    <span style={{ fontSize: "11px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace" }}>or with email</span>
-                    <div style={{ flex: 1, height: "1px", background: "#1e1e1b" }} />
+                    <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+                    <span style={{ fontSize: "11px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace" }}>or with email</span>
+                    <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
                   </div>
 
                   {/* Email */}
@@ -648,8 +648,8 @@ export default function RegisterPage() {
                       {email.includes("@") && !errors.email && (
                         <div style={{ position: "absolute", right: "13px", top: "50%", transform: "translateY(-50%)" }}>
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ animation: "checkIn 0.25s ease both" }}>
-                            <circle cx="7" cy="7" r="6" fill="#1D9E7522" stroke="#1D9E75" strokeWidth="1.2"/>
-                            <path d="M4 7l2 2 4-4" stroke="#1D9E75" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="7" cy="7" r="6" fill="var(--accent)22" stroke="var(--accent)" strokeWidth="1.2"/>
+                            <path d="M4 7l2 2 4-4" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </div>
                       )}
@@ -669,9 +669,9 @@ export default function RegisterPage() {
                       />
                       <button
                         onClick={() => setShowPw(p => !p)}
-                        style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#333330", display: "flex", padding: "2px", transition: "color 0.2s" }}
-                        onMouseEnter={e => e.currentTarget.style.color = "#807d76"}
-                        onMouseLeave={e => e.currentTarget.style.color = "#333330"}
+                        style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text4)", display: "flex", padding: "2px", transition: "color 0.2s" }}
+                        onMouseEnter={e => e.currentTarget.style.color = "var(--text2)"}
+                        onMouseLeave={e => e.currentTarget.style.color = "var(--text4)"}
                       ><EyeIcon open={showPw} /></button>
                     </div>
                     <ErrMsg msg={errors.password} />
@@ -690,15 +690,15 @@ export default function RegisterPage() {
                       />
                       <button
                         onClick={() => setShowCPw(p => !p)}
-                        style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#333330", display: "flex", padding: "2px", transition: "color 0.2s" }}
-                        onMouseEnter={e => e.currentTarget.style.color = "#807d76"}
-                        onMouseLeave={e => e.currentTarget.style.color = "#333330"}
+                        style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text4)", display: "flex", padding: "2px", transition: "color 0.2s" }}
+                        onMouseEnter={e => e.currentTarget.style.color = "var(--text2)"}
+                        onMouseLeave={e => e.currentTarget.style.color = "var(--text4)"}
                       ><EyeIcon open={showCPw} /></button>
                       {confirmPw && confirmPw === password && !errors.confirmPw && (
                         <div style={{ position: "absolute", right: "36px", top: "50%", transform: "translateY(-50%)" }}>
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ animation: "checkIn 0.25s ease both" }}>
-                            <circle cx="7" cy="7" r="6" fill="#1D9E7522" stroke="#1D9E75" strokeWidth="1.2"/>
-                            <path d="M4 7l2 2 4-4" stroke="#1D9E75" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="7" cy="7" r="6" fill="var(--accent)22" stroke="var(--accent)" strokeWidth="1.2"/>
+                            <path d="M4 7l2 2 4-4" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </div>
                       )}
@@ -756,7 +756,7 @@ export default function RegisterPage() {
                     <div style={{ position: "relative" }}>
                       <span style={{
                         position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)",
-                        fontSize: "14px", color: "#333330", fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: "14px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace",
                         pointerEvents: "none",
                       }}>@</span>
                       <input
@@ -773,26 +773,26 @@ export default function RegisterPage() {
                   {/* Preview card */}
                   {(firstName || username) && (
                     <div style={{
-                      background: "#0d0d0b", border: "1px solid #1e1e1b", borderRadius: "11px",
+                      background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: "11px",
                       padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px",
                       animation: "fadeUp 0.3s ease both",
                     }}>
                       <div style={{
                         width: "42px", height: "42px", borderRadius: "50%",
-                        background: "#0d1f19", border: "1px solid #1D9E7533",
+                        background: "var(--accent-bg)", border: "1px solid var(--accent)33",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: "22px", flexShrink: 0,
                       }}>{avatar}</div>
                       <div>
-                        <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#e8e5de", letterSpacing: "-0.01em" }}>
+                        <div style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--text)", letterSpacing: "-0.01em" }}>
                           {firstName || "—"} {lastName || ""}
                         </div>
-                        <div style={{ fontSize: "11px", color: "#1D9E75", fontFamily: "'JetBrains Mono', monospace", marginTop: "2px" }}>
+                        <div style={{ fontSize: "11px", color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace", marginTop: "2px" }}>
                           @{username || "username"}
                         </div>
                       </div>
                       <div style={{
-                        marginLeft: "auto", fontSize: "9px", color: "#2a2a26",
+                        marginLeft: "auto", fontSize: "9px", color: "var(--text4)",
                         fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.05em",
                       }}>PREVIEW</div>
                     </div>
@@ -808,32 +808,32 @@ export default function RegisterPage() {
 
                   {/* Summary card */}
                   <div style={{
-                    background: "#0d0d0b", border: "1px solid #1e1e1b", borderRadius: "12px", padding: "16px",
+                    background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: "12px", padding: "16px",
                   }}>
-                    <div style={{ fontSize: "10.5px", color: "#2a2a26", fontFamily: "'JetBrains Mono', monospace", marginBottom: "12px", letterSpacing: "0.05em" }}>
+                    <div style={{ fontSize: "10.5px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace", marginBottom: "12px", letterSpacing: "0.05em" }}>
                       ACCOUNT SUMMARY
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
                       <div style={{
                         width: "40px", height: "40px", borderRadius: "50%",
-                        background: "#0d1f19", border: "1px solid #1D9E7533",
+                        background: "var(--accent-bg)", border: "1px solid var(--accent)33",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: "20px", flexShrink: 0,
                       }}>{avatar}</div>
                       <div>
-                        <div style={{ fontSize: "13px", fontWeight: 600, color: "#e8e5de" }}>
+                        <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)" }}>
                           {firstName} {lastName}
                         </div>
-                        <div style={{ fontSize: "11px", color: "#1D9E75", fontFamily: "'JetBrains Mono', monospace" }}>
+                        <div style={{ fontSize: "11px", color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace" }}>
                           @{username} · {email}
                         </div>
                       </div>
                     </div>
-                    <div style={{ height: "1px", background: "#1a1a17", marginBottom: "10px" }} />
+                    <div style={{ height: "1px", background: "var(--border)", marginBottom: "10px" }} />
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                       {["In-memory store", ".NET 9 API", "React frontend"].map(t => (
                         <span key={t} style={{
-                          fontSize: "10px", background: "#1D9E7510", color: "#1D9E75", border: "1px solid #1D9E7522",
+                          fontSize: "10px", background: "var(--accent)10", color: "var(--accent)", border: "1px solid var(--accent)22",
                           padding: "3px 9px", borderRadius: "20px",
                           fontFamily: "'JetBrains Mono', monospace",
                         }}>{t}</span>
@@ -847,23 +847,23 @@ export default function RegisterPage() {
                       onClick={() => setNewsletter(p => !p)}
                       style={{
                         width: "18px", height: "18px", borderRadius: "5px", flexShrink: 0, marginTop: "1px",
-                        background: newsletter ? "#1D9E7522" : "#111110",
-                        border: `1px solid ${newsletter ? "#1D9E75" : "#252521"}`,
+                        background: newsletter ? "var(--accent)22" : "var(--bg3)",
+                        border: `1px solid ${newsletter ? "var(--accent)" : "var(--border2)"}`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         cursor: "pointer", transition: "all 0.2s",
                       }}
                     >
                       {newsletter && (
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ animation: "checkIn 0.2s ease both" }}>
-                          <path d="M1.5 5l2.5 2.5 5-5" stroke="#1D9E75" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M1.5 5l2.5 2.5 5-5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
                     </div>
                     <div>
-                      <div style={{ fontSize: "13px", fontWeight: 500, color: "#c8c5be", letterSpacing: "-0.01em" }}>
+                      <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--text2)", letterSpacing: "-0.01em" }}>
                         Product updates
                       </div>
-                      <div style={{ fontSize: "11.5px", color: "#3a3835", marginTop: "2px", lineHeight: 1.5 }}>
+                      <div style={{ fontSize: "11.5px", color: "var(--border2)", marginTop: "2px", lineHeight: 1.5 }}>
                         Get notified about new features and improvements.
                       </div>
                     </div>
@@ -875,24 +875,24 @@ export default function RegisterPage() {
                       onClick={() => { setAgreed(p => !p); setErrors(p => ({ ...p, agreed: "" })); }}
                       style={{
                         width: "18px", height: "18px", borderRadius: "5px", flexShrink: 0, marginTop: "1px",
-                        background: agreed ? "#1D9E7522" : "#111110",
-                        border: `1px solid ${errors.agreed ? "#e05050" : agreed ? "#1D9E75" : "#252521"}`,
+                        background: agreed ? "var(--accent)22" : "var(--bg3)",
+                        border: `1px solid ${errors.agreed ? "#e05050" : agreed ? "var(--accent)" : "var(--border2)"}`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         cursor: "pointer", transition: "all 0.2s",
                       }}
                     >
                       {agreed && (
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ animation: "checkIn 0.2s ease both" }}>
-                          <path d="M1.5 5l2.5 2.5 5-5" stroke="#1D9E75" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M1.5 5l2.5 2.5 5-5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
                     </div>
                     <div>
-                      <div style={{ fontSize: "13px", fontWeight: 500, color: "#c8c5be", letterSpacing: "-0.01em" }}>
+                      <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--text2)", letterSpacing: "-0.01em" }}>
                         I agree to the{" "}
-                        <span style={{ color: "#1D9E75", textDecoration: "underline", cursor: "pointer" }}>Terms of Service</span>
+                        <span style={{ color: "var(--accent)", textDecoration: "underline", cursor: "pointer" }}>Terms of Service</span>
                         {" "}and{" "}
-                        <span style={{ color: "#1D9E75", textDecoration: "underline", cursor: "pointer" }}>Privacy Policy</span>
+                        <span style={{ color: "var(--accent)", textDecoration: "underline", cursor: "pointer" }}>Privacy Policy</span>
                       </div>
                       {errors.agreed && <p style={{ fontSize: "11px", color: "#e05050", marginTop: "4px", fontFamily: "'JetBrains Mono', monospace" }}>{errors.agreed}</p>}
                     </div>
@@ -907,19 +907,19 @@ export default function RegisterPage() {
               <div key="success" style={{ animation: "successPop 0.5s cubic-bezier(.34,1.56,.64,1) both", textAlign: "center" }}>
                 <div style={{
                   width: "72px", height: "72px", borderRadius: "50%",
-                  background: "#0d1f19", border: "1px solid #1D9E7544",
+                  background: "var(--accent-bg)", border: "1px solid var(--accent)44",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   margin: "0 auto 20px",
                   fontSize: "32px",
                 }}>{avatar}</div>
                 <h2 style={{
                   fontSize: "28px", fontFamily: "'Instrument Serif', serif",
-                  fontWeight: 400, color: "#e8e5de", marginBottom: "8px",
+                  fontWeight: 400, color: "var(--text)", marginBottom: "8px",
                   letterSpacing: "-0.02em",
                 }}>
-                  Welcome, <span style={{ color: "#1D9E75", fontStyle: "italic" }}>{firstName}!</span>
+                  Welcome, <span style={{ color: "var(--accent)", fontStyle: "italic" }}>{firstName}!</span>
                 </h2>
-                <p style={{ fontSize: "13.5px", color: "#4a4844", marginBottom: "28px", lineHeight: 1.6 }}>
+                <p style={{ fontSize: "13.5px", color: "var(--text3)", marginBottom: "28px", lineHeight: 1.6 }}>
                   Your account is ready. Start capturing what matters.
                 </p>
 
@@ -927,8 +927,8 @@ export default function RegisterPage() {
                 <div style={{ display: "flex", justifyContent: "center", gap: "8px", flexWrap: "wrap", marginBottom: "28px" }}>
                   {[`@${username}`, email, avatar].map((item, i) => (
                     <span key={i} style={{
-                      fontSize: "11px", background: "#1D9E7510", color: "#1D9E75",
-                      border: "1px solid #1D9E7522", padding: "4px 12px",
+                      fontSize: "11px", background: "var(--accent)10", color: "var(--accent)",
+                      border: "1px solid var(--accent)22", padding: "4px 12px",
                       borderRadius: "20px", fontFamily: "'JetBrains Mono', monospace",
                     }}>{item}</span>
                   ))}
@@ -974,11 +974,11 @@ export default function RegisterPage() {
           {step < 3 && (
             <p style={{
               textAlign: "center", marginTop: "18px",
-              fontSize: "11.5px", color: "#2a2a26",
+              fontSize: "11.5px", color: "var(--text4)",
               fontFamily: "'JetBrains Mono', monospace",
             }}>
               Already have an account?{" "}
-              <button onClick={() => navigate("/login")} style={{ background: "none", border: "none", cursor: "pointer", color: "#1D9E75", fontSize: "11.5px", fontFamily: "'JetBrains Mono', monospace" }}>
+              <button onClick={() => navigate("/login")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: "11.5px", fontFamily: "'JetBrains Mono', monospace" }}>
                 Sign in
               </button>
             </p>
@@ -1002,7 +1002,7 @@ export default function RegisterPage() {
       {/* Footer stamp */}
       <div style={{
         textAlign: "center", paddingBottom: "28px",
-        fontSize: "10.5px", color: "#1e1e1b",
+        fontSize: "10.5px", color: "var(--border)",
         fontFamily: "'JetBrains Mono', monospace",
         animation: "pulse 2.5s ease-in-out infinite",
       }}>

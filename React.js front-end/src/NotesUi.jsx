@@ -996,7 +996,7 @@ export default function NotesUi() {
 
             <div style={{ margin: "4px 0", height: "1px", background: "var(--border)", opacity: 0.5 }} />
 
-            <button className="nav-item" title="Profile" onClick={() => showToast("Profile settings coming soon!", "👤")}>
+            <button className="nav-item" title="Profile" onClick={() => navigate("/profile")}>
               <span style={{ color: "var(--text3)" }}>{I.user()}</span>
               {!sidebarCollapsed && <span>My Profile</span>}
             </button>

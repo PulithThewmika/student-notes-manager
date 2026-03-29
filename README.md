@@ -1,6 +1,9 @@
-<img width="1080" height="904" alt="NOVA" src="https://github.com/user-attachments/assets/eeda1544-7710-4e8e-b729-995899e1cde0" />
+<p align="center"> <img src="https://github.com/user-attachments/assets/eeda1544-7710-4e8e-b729-995899e1cde0" alt="Nova Notes Hero" width="300"/> </p>
 
-# Student Notes Manager
+
+
+
+# NOVA NOTES Notes Manager
 
 A full-stack web application demonstrating the deployment of a React front-end and a .NET Web API back-end to Microsoft Azure. Users can add, view, update, and delete their notes seamlessly.
 

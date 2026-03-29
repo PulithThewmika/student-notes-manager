@@ -203,9 +203,11 @@ const G = `
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 32px;
-    width: 100%; max-width: 480px;
+    width: 100%; max-width: 520px;
     box-shadow: 0 24px 64px rgba(0,0,0,0.5);
     animation: popIn 0.25s ease both;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   /* Checklist */
@@ -270,6 +272,69 @@ const G = `
     transition: background 0.15s;
   }
   .divider:hover { background: var(--accent); }
+
+  @keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(29,158,117,0.3); } 50% { box-shadow: 0 0 0 6px rgba(29,158,117,0); } }
+  @keyframes slideLeft { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 9px; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start; padding: 5px 4px;
+    cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+    border: 1px solid transparent;
+  }
+  .cal-day:hover { background: var(--bg3); border-color: var(--border); }
+  .cal-day.has-notes { background: var(--accent-dim); border-color: var(--accent-border); }
+  .cal-day.today { border-color: var(--accent); background: var(--accent-bg); }
+  .cal-day.today .cal-day-num { color: var(--accent); font-weight: 700; }
+  .cal-day.other-month .cal-day-num { color: var(--text4); }
+  .cal-day.selected { background: var(--accent); border-color: var(--accent); }
+  .cal-day.selected .cal-day-num { color: #fff; }
+  .cal-day-num { font-size: 12.5px; font-weight: 500; color: var(--text2); line-height: 1; }
+  .cal-dot-row { display: flex; gap: 2px; margin-top: 3px; flex-wrap: wrap; justify-content: center; }
+  .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+
+  .tl-item {
+    display: flex; gap: 16px; align-items: flex-start; position: relative; padding-bottom: 20px;
+    animation: fadeUp 0.3s ease both;
+  }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item:last-child .tl-line { display: none; }
+  .tl-time { width: 64px; flex-shrink: 0; text-align: right; font-size: 11.5px; font-weight: 500; color: var(--text4); font-family: 'JetBrains Mono', monospace; padding-top: 12px; }
+  .tl-dot-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .tl-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: var(--border2);
+    border: 2px solid var(--bg2); margin-top: 12px; z-index: 1; transition: all 0.2s; flex-shrink: 0;
+  }
+  .tl-dot.active { background: var(--accent); animation: glow 2s ease infinite; }
+  .tl-dot.done { background: var(--text4); }
+  .tl-dot.upcoming { background: var(--blue, #3b82f6); border-color: var(--bg2); }
+  .tl-line { width: 1px; flex: 1; background: var(--border); margin-top: 4px; min-height: 20px; }
+  .tl-card {
+    flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; transition: all 0.18s; cursor: pointer;
+  }
+  .tl-card:hover { border-color: var(--accent-border); transform: translateX(2px); }
+  .tl-card.active { border-color: var(--accent); background: var(--accent-bg); }
+  .tl-card.done { opacity: 0.55; }
+
+  .sched-input {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text); outline: none; width: 100%; transition: border-color 0.2s;
+  }
+  .sched-input:focus { border-color: var(--accent-border); }
+  .sched-input::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
+  .week-col { flex: 1; min-width: 0; border-right: 1px solid var(--border); }
+  .week-col:last-child { border-right: none; }
+  .week-event {
+    background: var(--accent-dim); border-left: 2px solid var(--accent); border-radius: 6px;
+    padding: 4px 8px; font-size: 11px; font-weight: 500; color: var(--accent);
+    margin: 2px 4px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .week-event:hover { background: var(--accent-bg); }
 `;
 
 /* ── CONSTANTS ── */
@@ -292,6 +357,9 @@ const NOTE_COLORS_LIGHT = [
 ];
 
 const CATEGORIES = ["Work", "Personal", "Study", "Ideas", "Health", "Travel"];
+const REPEAT_OPTS = ["none", "daily", "weekly", "monthly"];
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+
 const TEMPLATES = [
   { name: "Meeting Notes", icon: "👥", content: "## Meeting Notes\n\n**Date:** \n**Attendees:** \n\n### Agenda\n- \n\n### Action Items\n- [ ] \n- [ ] \n\n### Notes\n" },
   { name: "Study Notes", icon: "📚", content: "## Study Notes\n\n**Topic:** \n**Date:** \n\n### Key Concepts\n- \n\n### Summary\n\n### Questions\n- " },
@@ -324,12 +392,32 @@ const fmtDate = (d) => {
 
 const genId = () => Date.now() + Math.random();
 
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+const fmt12 = (t) => {
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM";
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${ap}`;
+};
+
+const CAT_COLORS = {
+  Work: "var(--blue, #3b82f6)",
+  Personal: "var(--accent)",
+  Study: "var(--purple, #8b5cf6)",
+  Ideas: "var(--amber, #d4900a)",
+  Health: "#e05050",
+  Travel: "#06b6d4",
+};
+
 /* ── SVG Icons ── */
 const I = {
   logo: () => <img src="/NOVA.png" alt="NOVA Logo" style={{ width: "40px", height: "auto", borderRadius: "8px" }} />,
   plus: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
   search: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5"/><path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   notes: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="13" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h5M5 9h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  calendar: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 1.5v3M10 1.5v3M1.5 7h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  timeline: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="3" cy="4" r="1.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="3" cy="8" r="1.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="3" cy="12" r="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M6 4h7M6 8h7M6 12h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
   star: (filled) => <svg width="14" height="14" viewBox="0 0 14 14" fill={filled ? "currentColor" : "none"}><path d="M7 1.5l1.6 3.2 3.5.5-2.55 2.5.6 3.5L7 9.6l-3.15 1.6.6-3.5L2 5.2l3.5-.5L7 1.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
   pin: (filled) => <svg width="14" height="14" viewBox="0 0 14 14" fill={filled ? "currentColor" : "none"}><path d="M9 2L12 5l-2 2-.5 3L7 8.5l-3 3.5-.5-1L6.5 7 5 5.5l3-.5L9 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
   trash: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M11 4l-.8 7.5a1 1 0 01-1 .5H4.8a1 1 0 01-1-.5L3 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
@@ -356,6 +444,10 @@ const I = {
   palette: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="5" cy="5.5" r="1" fill="currentColor"/><circle cx="9" cy="5.5" r="1" fill="currentColor"/><circle cx="7" cy="9" r="1" fill="currentColor"/></svg>,
   user: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4.5" r="3.5" stroke="currentColor" strokeWidth="1.4"/><path d="M1.5 13.5v-1.5a3.5 3.5 0 013.5-3.5h5a3.5 3.5 0 013.5 3.5v1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   logout: () => <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M5.5 13.5h-3a1 1 0 01-1-1v-10a1 1 0 011-1h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M10.5 4.5L13 7.5l-2.5 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 7.5h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  sched: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4"/><path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  repeat: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5a5 5 0 019 3M12 9a5 5 0 01-9-3M12 6V9h-3M2 8V5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  chevLeft: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  chevRight: () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
 
 /* ── Toast component ── */
@@ -374,8 +466,447 @@ function Toast({ msg, icon, onDone }) {
   );
 }
 
+/* ── Schedule Modal ── */
+function ScheduleModal({ note, onSave, onClose }) {
+  const [form, setForm] = useState({
+    date: note.schedule?.date || todayStr(),
+    startTime: note.schedule?.startTime || "09:00",
+    endTime: note.schedule?.endTime || "10:00",
+    repeat: note.schedule?.repeat || "none",
+  });
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "420px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+          <div>
+            <h2 style={{ fontSize: "18px", fontFamily: "'Instrument Serif', serif", fontWeight: 400, color: "var(--text)", letterSpacing: "-0.02em" }}>
+              Schedule note
+            </h2>
+            <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "3px" }}>{note.title || "Untitled"}</p>
+          </div>
+          <button type="button" className="icon-btn" onClick={onClose}>{I.close()}</button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text4)", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", display: "block", marginBottom: "6px" }}>Date</label>
+            <input type="date" className="sched-input" value={form.date} onChange={(e) => set("date", e.target.value)} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text4)", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", display: "block", marginBottom: "6px" }}>Start</label>
+              <input type="time" className="sched-input" value={form.startTime} onChange={(e) => set("startTime", e.target.value)} />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text4)", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", display: "block", marginBottom: "6px" }}>End</label>
+              <input type="time" className="sched-input" value={form.endTime} onChange={(e) => set("endTime", e.target.value)} />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text4)", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", display: "block", marginBottom: "6px" }}>Repeat</label>
+            <div style={{ display: "flex", gap: "6px" }}>
+              {REPEAT_OPTS.map((r) => (
+                <button key={r} type="button" onClick={() => set("repeat", r)} style={{
+                  flex: 1, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${form.repeat === r ? "var(--accent-border)" : "var(--border)"}`,
+                  background: form.repeat === r ? "var(--accent-dim)" : "var(--bg3)",
+                  color: form.repeat === r ? "var(--accent)" : "var(--text3)",
+                  fontSize: "11.5px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
+                  fontFamily: "'JetBrains Mono', monospace", textTransform: "capitalize",
+                }}>{r}</button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+            <button type="button" className="btn-primary" onClick={() => onSave(form)} style={{ flex: 1 }}>
+              {I.sched()} Save schedule
+            </button>
+            {note.schedule && (
+              <button type="button" className="btn-ghost" onClick={() => onSave(null)} style={{ color: "#e05050", borderColor: "rgba(224,80,80,0.3)" }}>
+                Remove
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Calendar View ── */
+function CalendarView({ notes, onSelectNote, onNewNote }) {
+  const [curDate, setCurDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(todayStr());
+  const [calView, setCalView] = useState("month");
+
+  const year = curDate.getFullYear();
+  const month = curDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInM = new Date(year, month + 1, 0).getDate();
+  const daysInPM = new Date(year, month, 0).getDate();
+  const totalCells = Math.ceil((firstDay + daysInM) / 7) * 7;
+
+  const cells = Array.from({ length: totalCells }, (_, i) => {
+    const offset = i - firstDay;
+    if (offset < 0) {
+      const d = daysInPM + offset + 1;
+      return { day: d, month: month - 1, year, cur: false };
+    }
+    if (offset >= daysInM) {
+      const d = offset - daysInM + 1;
+      return { day: d, month: month + 1, year, cur: false };
+    }
+    return { day: offset + 1, month, year, cur: true };
+  });
+
+  const notesOnDay = (dateStr) => notes.filter((n) => n.schedule?.date === dateStr && !n.trashed);
+
+  const selectedDayNotes = notesOnDay(selectedDay).sort((a, b) => (a.schedule?.startTime || "").localeCompare(b.schedule?.startTime || ""));
+
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const weekDates = (() => {
+    const sel = new Date(selectedDay);
+    const dow = sel.getDay();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(sel);
+      d.setDate(d.getDate() - dow + i);
+      return d.toISOString().slice(0, 10);
+    });
+  })();
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+      <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px", background: "var(--bg2)", flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: "4px" }}>
+          <button type="button" className="icon-btn" onClick={() => setCurDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))}>{I.chevLeft()}</button>
+          <button type="button" className="icon-btn" onClick={() => setCurDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))}>{I.chevRight()}</button>
+        </div>
+        <h2 style={{ fontSize: "16px", fontFamily: "'Instrument Serif', serif", fontWeight: 400, color: "var(--text)", letterSpacing: "-0.02em" }}>
+          {MONTHS[month]} {year}
+        </h2>
+        <button type="button" className="btn-ghost" onClick={() => { setCurDate(new Date()); setSelectedDay(todayStr()); }} style={{ fontSize: "12px", padding: "5px 12px", marginLeft: "4px" }}>
+          Today
+        </button>
+        <div style={{ flex: 1 }} />
+        <div style={{ display: "flex", gap: "2px", background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: "8px", padding: "3px" }}>
+          {[["month", "Month"], ["week", "Week"]].map(([k, l]) => (
+            <button key={k} type="button" onClick={() => setCalView(k)} style={{
+              padding: "5px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 500,
+              background: calView === k ? "var(--accent-dim)" : "transparent",
+              color: calView === k ? "var(--accent)" : "var(--text3)",
+              border: "none", cursor: "pointer", transition: "all 0.15s",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}>{l}</button>
+          ))}
+        </div>
+        <button type="button" className="btn-primary" onClick={onNewNote} style={{ padding: "8px 14px", fontSize: "12.5px" }}>
+          {I.plus()} New event
+        </button>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <div style={{ flex: 1, overflow: "auto", padding: "16px" }}>
+          {calView === "month" ? (
+            <>
+              <div className="cal-grid" style={{ marginBottom: "6px" }}>
+                {DAYS.map((d) => (
+                  <div key={d} style={{ textAlign: "center", fontSize: "10.5px", fontWeight: 600, color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace", padding: "4px 0", letterSpacing: "0.04em" }}>{d}</div>
+                ))}
+              </div>
+              <div className="cal-grid">
+                {cells.map((cell, i) => {
+                  const ds = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
+                  const dayNotes = notesOnDay(ds);
+                  const isToday = ds === todayStr();
+                  const isSel = ds === selectedDay;
+                  return (
+                    <div
+                      key={i}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedDay(ds)}
+                      onKeyDown={(e) => e.key === "Enter" && setSelectedDay(ds)}
+                      className={`cal-day${!cell.cur ? " other-month" : ""}${dayNotes.length > 0 && !isSel ? " has-notes" : ""}${isToday && !isSel ? " today" : ""}${isSel ? " selected" : ""}`}
+                    >
+                      <span className="cal-day-num" style={isSel ? { color: "#fff" } : {}}>{cell.day}</span>
+                      {dayNotes.length > 0 && !isSel && (
+                        <div className="cal-dot-row">
+                          {dayNotes.slice(0, 3).map((n) => (
+                            <div key={n.id} className="cal-dot" style={{ background: CAT_COLORS[n.category] || "var(--accent)" }} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ display: "flex", borderBottom: "1px solid var(--border)", marginBottom: "0" }}>
+                <div style={{ width: "52px", flexShrink: 0 }} />
+                {weekDates.map((ds) => {
+                  const d = new Date(ds);
+                  const dow = DAYS[d.getDay()];
+                  const num = d.getDate();
+                  const isT = ds === todayStr();
+                  return (
+                    <div key={ds} className="week-col" style={{ padding: "8px 0", textAlign: "center", cursor: "pointer" }} onClick={() => setSelectedDay(ds)} role="presentation">
+                      <div style={{ fontSize: "10.5px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace" }}>{dow}</div>
+                      <div style={{
+                        width: "28px", height: "28px", borderRadius: "50%", margin: "4px auto 0",
+                        background: isT ? "var(--accent)" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "13px", fontWeight: 600,
+                        color: isT ? "#fff" : ds === selectedDay ? "var(--accent)" : "var(--text)",
+                      }}>{num}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ flex: 1, overflow: "auto" }}>
+                {HOURS.map((h) => (
+                  <div key={h} style={{ display: "flex", borderBottom: "1px solid var(--border)", minHeight: "52px" }}>
+                    <div style={{ width: "52px", flexShrink: 0, padding: "4px 8px 0 0", textAlign: "right", fontSize: "10.5px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace", paddingTop: "6px" }}>
+                      {fmt12(`${String(h).padStart(2, "0")}:00`)}
+                    </div>
+                    {weekDates.map((ds) => {
+                      const evs = notesOnDay(ds).filter((n) => {
+                        const sh = parseInt(n.schedule?.startTime || "0", 10);
+                        return sh === h;
+                      });
+                      return (
+                        <div key={ds} className="week-col" style={{ position: "relative", paddingTop: "2px" }}>
+                          {evs.map((ev) => (
+                            <div key={ev.id} className="week-event" onClick={() => onSelectNote(ev.id)} role="presentation"
+                              style={{ borderLeftColor: CAT_COLORS[ev.category] || "var(--accent)", color: CAT_COLORS[ev.category] || "var(--accent)" }}>
+                              {ev.title}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ width: "260px", borderLeft: "1px solid var(--border)", display: "flex", flexDirection: "column", flexShrink: 0, overflow: "hidden" }}>
+          <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)", letterSpacing: "-0.01em" }}>
+              {new Date(`${selectedDay}T12:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </div>
+            <div style={{ fontSize: "11px", color: "var(--text4)", marginTop: "2px", fontFamily: "'JetBrains Mono', monospace" }}>
+              {selectedDayNotes.length} event{selectedDayNotes.length !== 1 ? "s" : ""}
+            </div>
+          </div>
+          <div style={{ flex: 1, overflow: "auto", padding: "10px" }}>
+            {selectedDayNotes.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 16px" }}>
+                <div style={{ fontSize: "24px", marginBottom: "8px" }}>📭</div>
+                <p style={{ fontSize: "12px", color: "var(--text4)" }}>No events</p>
+              </div>
+            ) : selectedDayNotes.map((n) => (
+              <div key={n.id} onClick={() => onSelectNote(n.id)} role="presentation" style={{
+                background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: "10px",
+                padding: "10px 12px", marginBottom: "8px", cursor: "pointer",
+                borderLeft: `3px solid ${CAT_COLORS[n.category] || "var(--accent)"}`,
+                transition: "all 0.15s",
+              }}>
+                <div style={{ fontSize: "12.5px", fontWeight: 600, color: "var(--text)", marginBottom: "4px", letterSpacing: "-0.01em" }}>{n.title || "Untitled"}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace" }}>
+                  {I.clock()} {fmt12(n.schedule?.startTime)} – {fmt12(n.schedule?.endTime)}
+                </div>
+                {n.schedule?.repeat !== "none" && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "5px", fontSize: "10px", color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace" }}>
+                    {I.repeat()} {n.schedule.repeat}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Timeline View ── */
+function TimelineView({ notes, onSelectNote, onMarkDone, onNewNote }) {
+  const [filter, setFilter] = useState("today");
+
+  const scheduled = notes
+    .filter((n) => n.schedule && !n.trashed)
+    .sort((a, b) => {
+      const da = a.schedule.date + (a.schedule.startTime || "");
+      const db = b.schedule.date + (b.schedule.startTime || "");
+      return da.localeCompare(db);
+    });
+
+  const today = todayStr();
+  const filtered = scheduled.filter((n) => {
+    if (filter === "today") return n.schedule.date === today;
+    if (filter === "upcoming") return n.schedule.date >= today;
+    return true;
+  });
+
+  const nowH = new Date().getHours() + new Date().getMinutes() / 60;
+  const getStatus = (n) => {
+    if (n.schedule.done) return "done";
+    if (n.schedule.date < today) return "done";
+    if (n.schedule.date > today) return "upcoming";
+    const sh = parseInt(n.schedule.startTime || "0", 10);
+    const eh = parseInt(n.schedule.endTime || "23", 10);
+    if (nowH >= sh && nowH <= eh) return "active";
+    if (nowH > eh) return "done";
+    return "upcoming";
+  };
+
+  const todayNotes = scheduled.filter((n) => n.schedule.date === today);
+  const doneToday = todayNotes.filter((n) => getStatus(n) === "done" || n.schedule.done).length;
+  const progress = todayNotes.length ? Math.round((doneToday / todayNotes.length) * 100) : 0;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+      <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", background: "var(--bg2)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <h2 style={{ fontSize: "16px", fontFamily: "'Instrument Serif', serif", fontWeight: 400, color: "var(--text)", letterSpacing: "-0.02em" }}>Timeline</h2>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: "flex", gap: "4px" }}>
+            {[["today", "Today"], ["upcoming", "Upcoming"], ["all", "All"]].map(([k, l]) => (
+              <button key={k} type="button" onClick={() => setFilter(k)} style={{
+                padding: "5px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: 500,
+                background: filter === k ? "var(--accent-dim)" : "transparent",
+                border: `1px solid ${filter === k ? "var(--accent-border)" : "var(--border)"}`,
+                color: filter === k ? "var(--accent)" : "var(--text3)",
+                cursor: "pointer", transition: "all 0.15s", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}>{l}</button>
+            ))}
+          </div>
+          <button type="button" className="btn-primary" onClick={onNewNote} style={{ padding: "8px 14px", fontSize: "12.5px" }}>
+            {I.plus()} Schedule
+          </button>
+        </div>
+
+        {filter === "today" && todayNotes.length > 0 && (
+          <div style={{ marginTop: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
+              <span style={{ fontSize: "11.5px", color: "var(--text3)", fontFamily: "'JetBrains Mono', monospace" }}>
+                Today&apos;s progress · {doneToday}/{todayNotes.length} done
+              </span>
+              <span style={{ fontSize: "11.5px", color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>{progress}%</span>
+            </div>
+            <div style={{ height: "4px", background: "var(--border)", borderRadius: "2px", overflow: "hidden" }}>
+              <div style={{ height: "100%", background: "var(--accent)", borderRadius: "2px", width: `${progress}%`, transition: "width 0.5s ease" }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, overflow: "auto", padding: "24px 32px" }}>
+        {filtered.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "50%", gap: "12px" }}>
+            <div style={{ fontSize: "36px" }}>🗓️</div>
+            <p style={{ fontSize: "14px", color: "var(--text3)", fontFamily: "'Instrument Serif', serif" }}>
+              {filter === "today" ? "Nothing scheduled for today" : "No scheduled notes"}
+            </p>
+            <button type="button" className="btn-primary" onClick={onNewNote} style={{ fontSize: "13px" }}>
+              {I.plus()} Schedule a note
+            </button>
+          </div>
+        ) : (
+          <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+            {(() => {
+              const groups = {};
+              filtered.forEach((n) => {
+                const d = n.schedule.date;
+                if (!groups[d]) groups[d] = [];
+                groups[d].push(n);
+              });
+              return Object.entries(groups).map(([date, grpNotes]) => {
+                const dObj = new Date(`${date}T12:00:00`);
+                const isT = date === today;
+                const label = isT ? "Today" : dObj.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+                return (
+                  <div key={date} style={{ marginBottom: "32px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                      <div style={{
+                        fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace",
+                        color: isT ? "var(--accent)" : "var(--text4)", letterSpacing: "0.06em", textTransform: "uppercase",
+                      }}>{label}</div>
+                      <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+                    </div>
+
+                    {grpNotes.sort((a, b) => (a.schedule.startTime || "").localeCompare(b.schedule.startTime || "")).map((n) => {
+                      const status = getStatus(n);
+                      return (
+                        <div key={n.id} className="tl-item">
+                          <div className="tl-time">{fmt12(n.schedule.startTime)}</div>
+                          <div className="tl-dot-wrap">
+                            <div className={`tl-dot${status === "active" ? " active" : status === "done" ? " done" : status === "upcoming" ? " upcoming" : ""}`} />
+                            <div className="tl-line" />
+                          </div>
+                          <div className={`tl-card${status === "active" ? " active" : status === "done" ? " done" : ""}`} onClick={() => onSelectNote(n.id)} role="presentation">
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}>
+                                  <span style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--text)", letterSpacing: "-0.02em", textDecoration: status === "done" ? "line-through" : "none" }}>
+                                    {n.title || "Untitled"}
+                                  </span>
+                                  {status === "active" && (
+                                    <span style={{ fontSize: "10px", background: "var(--accent)", color: "#fff", padding: "2px 8px", borderRadius: "20px", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, animation: "pulse2 2s infinite" }}>
+                                      NOW
+                                    </span>
+                                  )}
+                                  {n.schedule.repeat !== "none" && (
+                                    <span style={{ fontSize: "10px", color: "var(--text4)" }}>{I.repeat()}</span>
+                                  )}
+                                </div>
+                                <div style={{ display: "flex", gap: "10px", fontSize: "11.5px", color: "var(--text3)", fontFamily: "'JetBrains Mono', monospace" }}>
+                                  <span>{fmt12(n.schedule.startTime)} – {fmt12(n.schedule.endTime)}</span>
+                                  {n.category && <span style={{ color: CAT_COLORS[n.category] || "var(--text4)" }}>· {n.category}</span>}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onMarkDone(n.id, status !== "done"); }}
+                                style={{
+                                  width: "24px", height: "24px", borderRadius: "6px", flexShrink: 0, marginTop: "1px",
+                                  background: status === "done" ? "var(--accent)" : "transparent",
+                                  border: `1px solid ${status === "done" ? "var(--accent)" : "var(--border2)"}`,
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  cursor: "pointer", transition: "all 0.15s", color: status === "done" ? "#fff" : "var(--text4)",
+                                }}
+                              >
+                                {status === "done" && <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2 4-4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Note Card ── */
-function NoteCard({ note, selected, onSelect, onPin, onFav, onDelete, view, theme }) {
+function NoteCard({ note, selected, onSelect, onPin, onFav, onDelete, onSchedule, view, theme }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const colorEntry = (theme === "dark" ? NOTE_COLORS : NOTE_COLORS_LIGHT).find(c => c.id === note.color);
@@ -419,6 +950,9 @@ function NoteCard({ note, selected, onSelect, onPin, onFav, onDelete, view, them
                 <button className="dropdown-item" onClick={e => { e.stopPropagation(); onPin(note.id); setMenuOpen(false); }}>
                   {I.pin(note.pinned)} {note.pinned ? "Unpin" : "Pin"}
                 </button>
+                <button className="dropdown-item" onClick={e => { e.stopPropagation(); onSchedule(note.id); setMenuOpen(false); }}>
+                  {I.sched()} Schedule
+                </button>
                 <button className="dropdown-item danger" onClick={e => { e.stopPropagation(); onDelete(note.id); setMenuOpen(false); }}>
                   {I.trash()} Delete
                 </button>
@@ -458,6 +992,15 @@ function NoteCard({ note, selected, onSelect, onPin, onFav, onDelete, view, them
         </div>
       )}
 
+      {note.schedule && (
+        <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "8px", background: "var(--accent-dim)", border: "1px solid var(--accent-border)", borderRadius: "6px", padding: "4px 8px", width: "fit-content" }}>
+          <span style={{ color: "var(--accent)", display: "flex" }}>{I.clock()}</span>
+          <span style={{ fontSize: "10.5px", color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+            {fmt12(note.schedule.startTime)}{note.schedule.repeat !== "none" && ` · ${note.schedule.repeat}`}
+          </span>
+        </div>
+      )}
+
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
         <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", flex: 1 }}>
@@ -479,7 +1022,7 @@ function NoteCard({ note, selected, onSelect, onPin, onFav, onDelete, view, them
 }
 
 /* ── Editor Panel ── */
-function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport, theme }) {
+function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport, onSchedule, theme }) {
   const [title, setTitle] = useState(note?.title || "");
   const [content, setContent] = useState(note?.content || "");
   const [focusMode, setFocusMode] = useState(false);
@@ -489,12 +1032,13 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
   const colorRef = useRef(null);
 
   useEffect(() => {
-    if (note) { 
+    if (note) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTitle(note.title); 
-      setContent(note.content); 
+      setTitle(note.title);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setContent(note.content);
     }
-  }, [note]);
+  }, [note?.id]);
 
   useEffect(() => {
     if (!note) return;
@@ -503,7 +1047,7 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
       onUpdate(note.id, { title, content, updatedAt: new Date() });
     }, 600);
     return () => clearTimeout(saveTimer.current);
-  }, [title, content, note, onUpdate]);
+  }, [title, content, note?.id, onUpdate]);
 
   useEffect(() => {
     const h = (e) => { if (colorRef.current && !colorRef.current.contains(e.target)) setShowColors(false); };
@@ -568,6 +1112,7 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
             </div>
           )}
         </div>
+        <button type="button" className={`icon-btn${note.schedule ? " active" : ""}`} onClick={() => onSchedule(note.id)} title="Schedule">{I.sched()}</button>
         <button className={`icon-btn${note.pinned ? " active" : ""}`} onClick={() => onPin(note.id)} title="Pin">
           {I.pin(note.pinned)}
         </button>
@@ -578,6 +1123,19 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
         <button className="icon-btn" onClick={() => onExport(note)} title="Export">{I.export()}</button>
         <button className="icon-btn" onClick={() => onDelete(note.id)} title="Delete" style={{ color: "var(--text3)" }}>{I.trash()}</button>
       </div>
+
+      {note.schedule && (
+        <div style={{ background: "var(--accent-dim)", borderBottom: "1px solid var(--accent-border)", padding: "8px 24px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ color: "var(--accent)", display: "flex" }}>{I.sched()}</span>
+          <span style={{ fontSize: "12px", color: "var(--accent)", fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+            {note.schedule.date} · {fmt12(note.schedule.startTime)} – {fmt12(note.schedule.endTime)}
+            {note.schedule.repeat !== "none" && ` · ${note.schedule.repeat}`}
+          </span>
+          <button type="button" onClick={() => onSchedule(note.id)} style={{ background: "none", border: "none", fontSize: "11px", color: "var(--accent)", cursor: "pointer", marginLeft: "auto", fontFamily: "'JetBrains Mono', monospace", textDecoration: "underline" }}>
+            Edit
+          </button>
+        </div>
+      )}
 
       {/* Title */}
       <div style={{ padding: "24px 24px 0" }}>
@@ -709,6 +1267,7 @@ const mapToFrontend = (apiNote) => ({
   checklist: [],
   reminder: null,
   trashed: false,
+  schedule: null,
 });
 
 /* ── MAIN APP ── */
@@ -727,6 +1286,8 @@ export default function NotesUi() {
   const [toast, setToast] = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [sortBy, setSortBy] = useState("updated"); // updated | created | title
+  const [scheduleNoteId, setScheduleNoteId] = useState(null);
+  const [mainView, setMainView] = useState("notes"); // notes | calendar | timeline
 
   const showToast = useCallback((msg, icon) => {
     setToast({ msg, icon, key: Date.now() });
@@ -776,13 +1337,19 @@ export default function NotesUi() {
         setEditorOpen(true);
         setShowTemplates(false);
         showToast("Note created", "✦");
-      } else {
-        showToast("Failed to create note", "❌");
+        return n.id;
       }
+      showToast("Failed to create note", "❌");
     } catch (e) {
       console.error(e);
       showToast("Error connecting to server", "❌");
     }
+    return null;
+  };
+
+  const createAndSchedule = async () => {
+    const id = await createNote(null);
+    if (id != null) setTimeout(() => setScheduleNoteId(id), 200);
   };
 
   const updateNote = useCallback((id, patch) => {
@@ -852,6 +1419,24 @@ export default function NotesUi() {
     showToast("Exported as .txt", "📦");
   }, [showToast]);
 
+  const saveSchedule = useCallback((noteId, schedData) => {
+    updateNote(noteId, { schedule: schedData ? { ...schedData, done: false } : null });
+    showToast(schedData ? "Schedule saved" : "Schedule removed", schedData ? "🗓️" : "🗑️");
+    setScheduleNoteId(null);
+  }, [updateNote, showToast]);
+
+  const markDone = useCallback((noteId, done) => {
+    setNotes(prev => prev.map(n => (n.id === noteId ? { ...n, schedule: n.schedule ? { ...n.schedule, done } : null } : n)));
+    showToast(done ? "Marked as done" : "Marked as pending", done ? "✅" : "↩️");
+  }, [showToast]);
+
+  const selectNote = useCallback((id) => {
+    setSelectedId(id);
+    setEditorOpen(true);
+    if (activeSection === "profile") setActiveSection("all");
+    if (mainView !== "notes") setMainView("notes");
+  }, [mainView, activeSection]);
+
   /* ── Filtered & sorted notes ── */
   const visibleNotes = (() => {
     let list = notes.filter(n => {
@@ -859,6 +1444,7 @@ export default function NotesUi() {
       if (n.trashed) return false;
       if (activeSection === "favorites") return n.favorite;
       if (activeSection === "pinned") return n.pinned;
+      if (activeSection === "scheduled") return !!n.schedule;
       if (activeSection.startsWith("cat:")) return n.category === activeSection.slice(4);
       return true;
     });
@@ -894,7 +1480,15 @@ export default function NotesUi() {
     all: notes.filter(n => !n.trashed).length,
     favorites: notes.filter(n => n.favorite && !n.trashed).length,
     pinned: notes.filter(n => n.pinned && !n.trashed).length,
+    scheduled: notes.filter(n => n.schedule && !n.trashed).length,
     trash: notes.filter(n => n.trashed).length,
+  };
+
+  const schedNote = scheduleNoteId ? notes.find(n => n.id === scheduleNoteId) : null;
+
+  const openMainView = (v) => {
+    setMainView(v);
+    if (activeSection === "profile") setActiveSection("all");
   };
 
   const gridCols = view === "grid" ? "repeat(auto-fill, minmax(240px, 1fr))"
@@ -940,6 +1534,14 @@ export default function NotesUi() {
         </div>
       )}
 
+      {schedNote && (
+        <ScheduleModal
+          note={schedNote}
+          onSave={(data) => saveSchedule(schedNote.id, data)}
+          onClose={() => setScheduleNoteId(null)}
+        />
+      )}
+
       <div className="app-layout">
 
         {/* ── SIDEBAR ── */}
@@ -981,16 +1583,45 @@ export default function NotesUi() {
               </div>
             )}
 
+            {!sidebarCollapsed && (
+              <div style={{ marginBottom: "12px" }}>
+                <div style={{ fontSize: "10px", fontWeight: 600, color: "var(--text4)", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", margin: "0 4px 6px" }}>Views</div>
+                {[
+                  { key: "notes", icon: I.notes(), label: "Notes" },
+                  { key: "calendar", icon: I.calendar(), label: "Calendar" },
+                  { key: "timeline", icon: I.timeline(), label: "Timeline" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className={`nav-item${mainView === item.key ? " active" : ""}`}
+                    onClick={() => openMainView(item.key)}
+                    title={item.label}
+                  >
+                    <span style={{ flexShrink: 0 }}>{item.icon}</span>
+                    <span style={{ flex: 1 }}>{item.label}</span>
+                    {item.key === "timeline" && counts.scheduled > 0 && (
+                      <span style={{ fontSize: "10.5px", color: "var(--text4)", fontFamily: "'JetBrains Mono', monospace", background: "var(--bg3)", padding: "1px 7px", borderRadius: "20px" }}>{counts.scheduled}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div style={{ height: "1px", background: "var(--border)", margin: "8px 4px", opacity: 0.5 }} />
+
             {/* Main nav */}
             {[
               { key: "all", icon: I.notes(), label: "All Notes", count: counts.all },
               { key: "favorites", icon: I.star(true), label: "Favourites", count: counts.favorites },
               { key: "pinned", icon: I.pin(true), label: "Pinned", count: counts.pinned },
+              { key: "scheduled", icon: I.sched(), label: "Scheduled", count: counts.scheduled },
             ].map(item => (
               <button
                 key={item.key}
-                className={`nav-item${activeSection === item.key ? " active" : ""}`}
-                onClick={() => { setActiveSection(item.key); setActiveTag(null); }}
+                type="button"
+                className={`nav-item${activeSection === item.key && mainView === "notes" ? " active" : ""}`}
+                onClick={() => { setActiveSection(item.key); setActiveTag(null); setMainView("notes"); }}
                 title={item.label}
               >
                 <span style={{ flexShrink: 0 }}>{item.icon}</span>
@@ -1017,11 +1648,12 @@ export default function NotesUi() {
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
-                className={`nav-item${activeSection === `cat:${cat}` ? " active" : ""}`}
-                onClick={() => { setActiveSection(`cat:${cat}`); setActiveTag(null); }}
+                type="button"
+                className={`nav-item${activeSection === `cat:${cat}` && mainView === "notes" ? " active" : ""}`}
+                onClick={() => { setActiveSection(`cat:${cat}`); setActiveTag(null); setMainView("notes"); }}
                 title={cat}
               >
-                <span style={{ flexShrink: 0 }}>{I.folder()}</span>
+                <span style={{ flexShrink: 0, color: CAT_COLORS[cat] || "var(--text3)", display: "flex" }}>{I.folder()}</span>
                 {!sidebarCollapsed && (
                   <>
                     <span style={{ flex: 1 }}>{cat}</span>
@@ -1044,7 +1676,9 @@ export default function NotesUi() {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", padding: "0 4px" }}>
                   {allTags.map(t => (
                     <span key={t} className={`tag-pill${activeTag === t ? " active" : ""}`}
-                      onClick={() => setActiveTag(prev => prev === t ? null : t)}>
+                      onClick={() => { setActiveTag((prev) => (prev === t ? null : t)); setMainView("notes"); }}
+                      role="presentation"
+                    >
                       #{t}
                     </span>
                   ))}
@@ -1056,8 +1690,9 @@ export default function NotesUi() {
           {/* Sidebar footer */}
           <div style={{ padding: "10px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "2px" }}>
             <button
-              className={`nav-item${activeSection === "trash" ? " active" : ""}`}
-              onClick={() => { setActiveSection("trash"); setActiveTag(null); }}
+              type="button"
+              className={`nav-item${activeSection === "trash" && mainView === "notes" ? " active" : ""}`}
+              onClick={() => { setActiveSection("trash"); setActiveTag(null); setMainView("notes"); }}
               title="Trash"
             >
               <span>{I.trash()}</span>
@@ -1092,6 +1727,10 @@ export default function NotesUi() {
         <div className="main-area">
           {activeSection === "profile" ? (
             <ProfilePage totalNotes={counts.all} />
+          ) : mainView === "calendar" ? (
+            <CalendarView notes={notes} onSelectNote={selectNote} onNewNote={createAndSchedule} />
+          ) : mainView === "timeline" ? (
+            <TimelineView notes={notes} onSelectNote={selectNote} onMarkDone={markDone} onNewNote={createAndSchedule} />
           ) : (
             <>
               {/* Topbar */}
@@ -1150,6 +1789,7 @@ export default function NotesUi() {
                 {activeSection === "all" ? "All Notes"
                   : activeSection === "favorites" ? "Favourites"
                   : activeSection === "pinned" ? "Pinned"
+                  : activeSection === "scheduled" ? "Scheduled"
                   : activeSection === "trash" ? "Trash"
                   : activeSection.slice(4)}
                 {activeTag && <span style={{ color: "var(--accent)", fontStyle: "italic" }}> · #{activeTag}</span>}
@@ -1173,7 +1813,13 @@ export default function NotesUi() {
 
           {/* Notes grid */}
           <div style={{ flex: 1, overflow: "auto", padding: "0 20px 24px" }}>
-            {visibleNotes.length === 0 ? (
+            {isLoading ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "50%", gap: "16px" }}>
+                <div className="skeleton" style={{ width: "48px", height: "48px", borderRadius: "12px" }} />
+                <div className="skeleton" style={{ width: "200px", height: "14px" }} />
+                <div className="skeleton" style={{ width: "160px", height: "14px" }} />
+              </div>
+            ) : visibleNotes.length === 0 ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60%", gap: "12px", animation: "fadeIn 0.3s ease" }}>
                 <div style={{ width: "52px", height: "52px", background: "var(--bg3)", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text4)", fontSize: "22px" }}>
                   {search ? "🔍" : activeSection === "trash" ? "🗑️" : "✦"}
@@ -1209,10 +1855,11 @@ export default function NotesUi() {
                       key={note.id}
                       note={note}
                       selected={selectedId === note.id}
-                      onSelect={(id) => { setSelectedId(id); setEditorOpen(true); }}
+                      onSelect={selectNote}
                       onPin={togglePin}
                       onFav={toggleFav}
                       onDelete={deleteNote}
+                      onSchedule={(id) => setScheduleNoteId(id)}
                       view={view}
                       theme={theme}
                     />
@@ -1226,8 +1873,8 @@ export default function NotesUi() {
         </div>
 
         {/* ── EDITOR ── */}
-        <div className={`editor-panel${editorOpen && selectedNote ? "" : " hidden"}`}>
-          {editorOpen && selectedNote && (
+        <div className={`editor-panel${editorOpen && selectedNote && mainView === "notes" && activeSection !== "profile" ? "" : " hidden"}`}>
+          {editorOpen && selectedNote && mainView === "notes" && activeSection !== "profile" && (
             <EditorPanel
               note={selectedNote}
               onUpdate={updateNote}
@@ -1236,6 +1883,7 @@ export default function NotesUi() {
               onPin={togglePin}
               onDelete={deleteNote}
               onExport={exportNote}
+              onSchedule={(id) => setScheduleNoteId(id)}
               theme={theme}
             />
           )}

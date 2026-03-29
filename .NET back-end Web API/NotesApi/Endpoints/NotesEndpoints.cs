@@ -45,7 +45,7 @@ public static class NotesEndpoints
             }
         });
 
-        group.MapDelete("/{id}", async (INotesService notesService, string id, ClaimsPrincipal principal) =>
+        group.MapPost("/{id}/trash", async (ITrashService trashService, string id, ClaimsPrincipal principal) =>
         {
             var userId = GetUserId(principal);
             if (string.IsNullOrWhiteSpace(userId))
@@ -53,8 +53,8 @@ public static class NotesEndpoints
 
             try
             {
-                var deleted = await notesService.DeleteAsync(id, userId);
-                if (!deleted)
+                var moved = await trashService.MoveNoteToTrashAsync(id, userId);
+                if (!moved)
                     return Results.NotFound(new { Error = "Note not found or unauthorized." });
 
                 return Results.NoContent();

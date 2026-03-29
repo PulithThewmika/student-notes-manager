@@ -264,6 +264,13 @@ const G = `
   }
   .week-event:hover { background: var(--accent-bg); }
 
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+    background-size: 400px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+  }
+
   /* scroll */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -309,17 +316,87 @@ const TEMPLATES   = [
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-/* ── Seed notes with schedules ── */
-const NOW = Date.now();
-const DAY = 86400000;
-const SEED_NOTES = [
-  { id: 1, title: "Ship landing page", content: "Polish the hero section copy and CTA buttons before Monday's demo.", category: "Work", tags: ["frontend","urgent"], color: "green", pinned: true, favorite: true, createdAt: new Date(NOW - DAY*2), updatedAt: new Date(NOW - 3600000), checklist: [], reminder: null, trashed: false, schedule: { date: new Date(NOW + DAY).toISOString().slice(0,10), startTime: "09:00", endTime: "11:00", repeat: "none", done: false } },
-  { id: 2, title: "CORS configuration", content: "Allow localhost:5173 in the .NET 9 CORS policy.", category: "Work", tags: ["backend","dotnet"], color: "blue", pinned: true, favorite: false, createdAt: new Date(NOW - DAY*3), updatedAt: new Date(NOW - 7200000), checklist: [], reminder: null, trashed: false, schedule: { date: new Date(NOW).toISOString().slice(0,10), startTime: "14:00", endTime: "15:00", repeat: "none", done: false } },
-  { id: 3, title: "Read Clean Code", content: "Chapter 4: Comments — Chapter 5: Formatting", category: "Study", tags: ["books","programming"], color: "none", pinned: false, favorite: true, createdAt: new Date(NOW - DAY*5), updatedAt: new Date(NOW - DAY), checklist: [], reminder: null, trashed: false, schedule: { date: new Date(NOW).toISOString().slice(0,10), startTime: "20:00", endTime: "21:30", repeat: "daily", done: false } },
-  { id: 4, title: "Grocery run", content: "Weekly shopping list", category: "Personal", tags: ["shopping"], color: "amber", pinned: false, favorite: false, createdAt: new Date(NOW - DAY), updatedAt: new Date(NOW - 1800000), checklist: [{ id: 1, text: "Oat milk x2", done: true },{ id: 2, text: "Greek yoghurt", done: false },{ id: 3, text: "Sourdough bread", done: false },{ id: 4, text: "Avocados x3", done: false }], reminder: null, trashed: false, schedule: null },
-  { id: 5, title: "App feature ideas", content: "• AI summarisation\n• Voice-to-text\n• Offline-first\n• Collaborative editing", category: "Ideas", tags: ["product","brainstorm"], color: "purple", pinned: false, favorite: true, createdAt: new Date(NOW - DAY*7), updatedAt: new Date(NOW - DAY*2), checklist: [], reminder: null, trashed: false, schedule: { date: new Date(NOW + DAY*2).toISOString().slice(0,10), startTime: "10:00", endTime: "11:00", repeat: "none", done: false } },
-  { id: 6, title: "Morning run", content: "5:45am wake · 6:00am warm-up · 6:10am 5k · 6:40am cool down", category: "Health", tags: ["fitness","habit"], color: "none", pinned: false, favorite: false, createdAt: new Date(NOW - DAY*10), updatedAt: new Date(NOW - DAY*3), checklist: [], reminder: null, trashed: false, schedule: { date: new Date(NOW).toISOString().slice(0,10), startTime: "06:00", endTime: "07:00", repeat: "daily", done: true } },
-];
+/* ── API (JWT from login; base URL matches LoginPage) ── */
+let API_ROOT = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000";
+if (API_ROOT.endsWith("/api/notes")) {
+  API_ROOT = API_ROOT.replace(/\/api\/notes\/?$/, "");
+}
+API_ROOT = API_ROOT.replace(/\/$/, "");
+
+const apiUrl = (path) => `${API_ROOT}${path.startsWith("/") ? path : `/${path}`}`;
+
+const authHeaders = () => {
+  const token = localStorage.getItem("token");
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+};
+
+const isPersistedNoteId = (id) => typeof id === "string" && /^[a-f0-9]{24}$/i.test(id);
+
+const mapApiNoteToFrontend = (n, trashed) => {
+  let checklist = [];
+  try {
+    checklist = n.checklistJson ? JSON.parse(n.checklistJson) : [];
+    if (!Array.isArray(checklist)) checklist = [];
+  } catch {
+    checklist = [];
+  }
+  let schedule = null;
+  try {
+    schedule = n.scheduleJson ? JSON.parse(n.scheduleJson) : null;
+  } catch {
+    schedule = null;
+  }
+  return {
+    id: n.id,
+    title: n.title ?? "",
+    content: n.description ?? "",
+    category: n.category || "Personal",
+    tags: Array.isArray(n.tags) ? n.tags : [],
+    color: n.color || "none",
+    pinned: !!n.isPinned,
+    favorite: !!n.isFavorite || (!!n.isImportant && !n.isPinned),
+    createdAt: n.createdAt ? new Date(n.createdAt) : new Date(),
+    updatedAt: n.updatedAt ? new Date(n.updatedAt) : new Date(),
+    checklist,
+    reminder: null,
+    trashed: !!trashed,
+    schedule,
+  };
+};
+
+const mapTrashedApiToFrontend = (t) =>
+  mapApiNoteToFrontend(
+    {
+      id: t.id,
+      title: t.title,
+      description: t.description,
+      category: t.category,
+      tags: t.tags,
+      color: t.color,
+      isPinned: t.isPinned,
+      isFavorite: t.isFavorite,
+      checklistJson: t.checklistJson,
+      scheduleJson: t.scheduleJson,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+    },
+    true
+  );
+
+const noteToPayload = (note) => ({
+  title: (note.title || "").trim() || "Untitled",
+  description: note.content ?? "",
+  isImportant: !!(note.pinned || note.favorite),
+  category: note.category || "Personal",
+  tags: note.tags || [],
+  color: note.color || "none",
+  isPinned: !!note.pinned,
+  isFavorite: !!note.favorite,
+  checklistJson: JSON.stringify(note.checklist || []),
+  scheduleJson: note.schedule ? JSON.stringify(note.schedule) : null,
+});
 
 /* ── Helpers ── */
 const fmtDate = (d) => {
@@ -1109,7 +1186,8 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
 
 /* ── MAIN APP ── */
 export default function NotesUi() {
-  const [notes, setNotes]                     = useState(SEED_NOTES);
+  const [notes, setNotes]                     = useState([]);
+  const [isLoading, setIsLoading]             = useState(true);
   const [selectedId, setSelectedId]           = useState(null);
   const [view, setView]                       = useState("grid");
   const { theme, toggleTheme }               = useTheme();
@@ -1127,57 +1205,192 @@ export default function NotesUi() {
 
   const showToast = useCallback((msg, icon) => setToast({ msg, icon, key: Date.now() }), []);
 
+  const fetchNotes = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoading(false);
+      navigate("/login");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const [notesRes, trashRes] = await Promise.all([
+        fetch(apiUrl("/api/notes"), { headers: authHeaders() }),
+        fetch(apiUrl("/api/trash"), { headers: authHeaders() }),
+      ]);
+      if (notesRes.status === 401 || trashRes.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+      const active = notesRes.ok ? await notesRes.json() : [];
+      const trashed = trashRes.ok ? await trashRes.json() : [];
+      setNotes([
+        ...active.map((n) => mapApiNoteToFrontend(n, false)),
+        ...trashed.map((t) => mapTrashedApiToFrontend(t)),
+      ]);
+      if (!notesRes.ok) showToast("Could not load notes", "❌");
+    } catch (e) {
+      console.error(e);
+      showToast("Error connecting to server", "❌");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate, showToast]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
   /* ── CRUD ── */
-  const createNote = (template=null) => {
-    const n = {
-      id: genId(), title: template?.name==="Quick Note" ? "" : template?.name || "",
-      content: template?.content || "", category: "Personal", tags: [], color: "none",
-      pinned: false, favorite: false, createdAt: new Date(), updatedAt: new Date(),
-      checklist: [], reminder: null, trashed: false, schedule: null,
+  const createNote = async (template = null) => {
+    const draft = {
+      title: template?.name === "Quick Note" ? "" : template?.name || "",
+      content: template?.content || "",
+      category: "Personal",
+      tags: [],
+      color: "none",
+      pinned: false,
+      favorite: false,
+      checklist: [],
+      schedule: null,
     };
-    setNotes(prev => [n, ...prev]);
-    setSelectedId(n.id); setEditorOpen(true); setShowTemplates(false);
-    showToast("Note created","✦");
-    return n.id;
+    const payload = noteToPayload({ ...draft, title: draft.title || "Untitled" });
+    try {
+      const res = await fetch(apiUrl("/api/notes"), {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 401) {
+        navigate("/login");
+        return null;
+      }
+      if (!res.ok) {
+        showToast("Failed to create note", "❌");
+        return null;
+      }
+      const n = await res.json();
+      const fe = mapApiNoteToFrontend(n, false);
+      setNotes((prev) => [fe, ...prev]);
+      setSelectedId(fe.id);
+      setEditorOpen(true);
+      setShowTemplates(false);
+      showToast("Note created", "✦");
+      return fe.id;
+    } catch (e) {
+      console.error(e);
+      showToast("Error connecting to server", "❌");
+      return null;
+    }
   };
 
-  const createAndSchedule = () => {
-    const id = createNote();
-    setTimeout(() => setScheduleNoteId(id), 200);
+  const createAndSchedule = async () => {
+    const id = await createNote(null);
+    if (id != null) setTimeout(() => setScheduleNoteId(id), 200);
   };
 
   const updateNote = useCallback((id, patch) => {
-    setNotes(prev => prev.map(n => n.id===id ? { ...n, ...patch } : n));
+    setNotes((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, ...patch } : n));
+      const merged = updated.find((n) => n.id === id);
+      if (merged && isPersistedNoteId(id) && !merged.trashed) {
+        const payload = noteToPayload(merged);
+        fetch(apiUrl(`/api/notes/${id}`), {
+          method: "PUT",
+          headers: authHeaders(),
+          body: JSON.stringify(payload),
+        })
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error("put"))))
+          .then((apiNote) =>
+            setNotes((p) => p.map((n) => (n.id === id ? mapApiNoteToFrontend(apiNote, n.trashed) : n)))
+          )
+          .catch(console.error);
+      }
+      return updated;
+    });
   }, []);
 
-  const deleteNote = useCallback((id) => {
-    const note = notes.find(n => n.id===id);
-    if (note?.trashed) {
-      setNotes(prev => prev.filter(n => n.id!==id));
-      showToast("Permanently deleted","🗑️");
-    } else {
-      updateNote(id, { trashed: true, updatedAt: new Date() });
-      showToast("Moved to trash","🗑️");
-    }
-    if (selectedId===id) { setSelectedId(null); setEditorOpen(false); }
-  }, [notes, selectedId, updateNote, showToast]);
+  const deleteNote = useCallback(
+    async (id) => {
+      const note = notes.find((n) => n.id === id);
+      if (!note) return;
+      const sid = String(id);
+      try {
+        if (note.trashed) {
+          const res = await fetch(apiUrl(`/api/trash/${sid}`), { method: "DELETE", headers: authHeaders() });
+          if (res.status === 401) {
+            navigate("/login");
+            return;
+          }
+          if (res.ok) {
+            setNotes((prev) => prev.filter((n) => n.id !== id));
+            showToast("Permanently deleted", "🗑️");
+          } else showToast("Could not delete note", "❌");
+        } else {
+          const res = await fetch(apiUrl(`/api/notes/${sid}/trash`), { method: "POST", headers: authHeaders() });
+          if (res.status === 401) {
+            navigate("/login");
+            return;
+          }
+          if (res.ok) {
+            setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, trashed: true, updatedAt: new Date() } : n)));
+            showToast("Moved to trash", "🗑️");
+          } else showToast("Could not move to trash", "❌");
+        }
+      } catch (e) {
+        console.error(e);
+        showToast("Network error", "❌");
+      }
+      if (selectedId === id) {
+        setSelectedId(null);
+        setEditorOpen(false);
+      }
+    },
+    [notes, selectedId, navigate, showToast]
+  );
 
-  const restoreNote = useCallback((id) => {
-    updateNote(id, { trashed: false, updatedAt: new Date() });
-    showToast("Note restored","✨");
-  }, [updateNote, showToast]);
+  const restoreNote = useCallback(
+    async (id) => {
+      const sid = String(id);
+      try {
+        const res = await fetch(apiUrl(`/api/trash/${sid}/restore`), { method: "POST", headers: authHeaders() });
+        if (res.status === 401) {
+          navigate("/login");
+          return;
+        }
+        if (res.ok) {
+          const apiNote = await res.json();
+          setNotes((prev) => [...prev.filter((n) => n.id !== id), mapApiNoteToFrontend(apiNote, false)]);
+          showToast("Note restored", "✨");
+        } else showToast("Could not restore note", "❌");
+      } catch (e) {
+        console.error(e);
+        showToast("Network error", "❌");
+      }
+    },
+    [navigate, showToast]
+  );
 
-  const togglePin = useCallback((id) => {
-    const n = notes.find(x => x.id===id);
-    updateNote(id, { pinned: !n.pinned });
-    showToast(n.pinned?"Unpinned":"Pinned","📌");
-  }, [notes, updateNote, showToast]);
+  const togglePin = useCallback(
+    (vid) => {
+      const n = notes.find((x) => x.id === vid);
+      if (!n) return;
+      updateNote(vid, { pinned: !n.pinned });
+      showToast(n.pinned ? "Unpinned" : "Pinned", "📌");
+    },
+    [notes, updateNote, showToast]
+  );
 
-  const toggleFav = useCallback((id) => {
-    const n = notes.find(x => x.id===id);
-    updateNote(id, { favorite: !n.favorite });
-    showToast(n.favorite?"Removed from favourites":"Added to favourites","⭐");
-  }, [notes, updateNote, showToast]);
+  const toggleFav = useCallback(
+    (vid) => {
+      const n = notes.find((x) => x.id === vid);
+      if (!n) return;
+      updateNote(vid, { favorite: !n.favorite });
+      showToast(n.favorite ? "Removed from favourites" : "Added to favourites", "⭐");
+    },
+    [notes, updateNote, showToast]
+  );
 
   const exportNote = useCallback((note) => {
     const blob = new Blob([`# ${note.title}\n\n${note.content}`], { type: "text/plain" });
@@ -1192,10 +1405,15 @@ export default function NotesUi() {
     setScheduleNoteId(null);
   }, [updateNote, showToast]);
 
-  const markDone = useCallback((noteId, done) => {
-    setNotes(prev => prev.map(n => n.id===noteId ? { ...n, schedule: n.schedule ? { ...n.schedule, done } : null } : n));
-    showToast(done?"Marked as done":"Marked as pending", done?"✅":"↩️");
-  }, [showToast]);
+  const markDone = useCallback(
+    (noteId, done) => {
+      const n = notes.find((x) => x.id === noteId);
+      if (!n?.schedule) return;
+      updateNote(noteId, { schedule: { ...n.schedule, done } });
+      showToast(done ? "Marked as done" : "Marked as pending", done ? "✅" : "↩️");
+    },
+    [notes, updateNote, showToast]
+  );
 
   const selectNote = useCallback((id) => {
     setSelectedId(id);
@@ -1226,7 +1444,7 @@ export default function NotesUi() {
   })();
 
   const selectedNote = notes.find(n => n.id===selectedId)||null;
-  const allTags      = [...new Set(notes.flatMap(n => n.tags))];
+  const allTags      = [...new Set(notes.filter(n => !n.trashed).flatMap(n => n.tags))];
   const counts       = {
     all:       notes.filter(n => !n.trashed).length,
     favorites: notes.filter(n => n.favorite&&!n.trashed).length,
@@ -1399,7 +1617,7 @@ export default function NotesUi() {
               <span style={{ color:"var(--text3)" }}>{theme==="dark"?I.sun():I.moon()}</span>
               {!sidebarCollapsed && <span>{theme==="dark"?"Light mode":"Dark mode"}</span>}
             </button>
-            <button className="nav-item" title="Log out" style={{ color:"var(--red)" }} onClick={() => navigate("/")}>
+            <button type="button" className="nav-item" title="Log out" style={{ color:"var(--red)" }} onClick={() => { localStorage.removeItem("token"); localStorage.removeItem("user"); navigate("/"); }}>
               <span style={{ color:"inherit" }}>{I.logout()}</span>
               {!sidebarCollapsed && <span>Log out</span>}
             </button>
@@ -1449,8 +1667,20 @@ export default function NotesUi() {
                   </span>
                 </div>
                 {activeSection==="trash" && counts.trash>0 && (
-                  <button className="btn-ghost" style={{ fontSize:"12px", color:"var(--red)", borderColor:"rgba(224,80,80,0.3)" }}
-                    onClick={() => { setNotes(prev => prev.filter(n => !n.trashed)); showToast("Trash emptied","🗑️"); }}>
+                  <button type="button" className="btn-ghost" style={{ fontSize:"12px", color:"var(--red)", borderColor:"rgba(224,80,80,0.3)" }}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(apiUrl("/api/trash/all"), { method: "DELETE", headers: authHeaders() });
+                        if (res.status === 401) { navigate("/login"); return; }
+                        if (res.ok) {
+                          setNotes((prev) => prev.filter((n) => !n.trashed));
+                          showToast("Trash emptied", "🗑️");
+                        } else showToast("Could not empty trash", "❌");
+                      } catch (e) {
+                        console.error(e);
+                        showToast("Network error", "❌");
+                      }
+                    }}>
                     Empty trash
                   </button>
                 )}
@@ -1458,7 +1688,13 @@ export default function NotesUi() {
 
               {/* Grid */}
               <div style={{ flex:1, overflow:"auto", padding:"0 20px 24px" }}>
-                {visibleNotes.length===0 ? (
+                {isLoading ? (
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"50%", gap:"16px" }}>
+                    <div className="skeleton" style={{ width:"48px", height:"48px", borderRadius:"12px" }} />
+                    <div className="skeleton" style={{ width:"200px", height:"14px" }} />
+                    <div className="skeleton" style={{ width:"160px", height:"14px" }} />
+                  </div>
+                ) : visibleNotes.length===0 ? (
                   <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"60%", gap:"12px", animation:"fadeIn 0.3s ease" }}>
                     <div style={{ width:"52px", height:"52px", background:"var(--bg3)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--text4)", fontSize:"22px" }}>
                       {search?"🔍":activeSection==="trash"?"🗑️":"✦"}

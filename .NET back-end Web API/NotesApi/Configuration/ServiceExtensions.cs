@@ -57,5 +57,6 @@ public static class ServiceExtensions
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INotesService, NotesService>();
+        services.AddScoped<ITrashService, TrashService>();
     }
 }

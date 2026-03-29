@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "./ThemeContext";
 import { useNavigate } from "react-router-dom";
+import ProfilePage from "./ProfilePage";
 
 /* ── Font injection ── */
 (() => {
@@ -1197,9 +1198,11 @@ export default function NotesUi() {
   }, [showToast]);
 
   const selectNote = useCallback((id) => {
-    setSelectedId(id); setEditorOpen(true);
-    if (mainView!=="notes") setMainView("notes");
-  }, [mainView]);
+    setSelectedId(id);
+    setEditorOpen(true);
+    if (activeSection === "profile") setActiveSection("all");
+    if (mainView !== "notes") setMainView("notes");
+  }, [mainView, activeSection]);
 
   /* ── Filtered notes ── */
   const visibleNotes = (() => {
@@ -1311,7 +1314,7 @@ export default function NotesUi() {
                   { key:"calendar", icon: I.calendar(), label:"Calendar" },
                   { key:"timeline", icon: I.timeline(), label:"Timeline" },
                 ].map(item => (
-                  <button key={item.key} className={`nav-item${mainView===item.key?" active":""}`} onClick={() => setMainView(item.key)} title={item.label}>
+                  <button key={item.key} className={`nav-item${mainView===item.key?" active":""}`} onClick={() => { setMainView(item.key); if (activeSection==="profile") setActiveSection("all"); }} title={item.label}>
                     <span style={{ flexShrink:0 }}>{item.icon}</span>
                     <span style={{ flex:1 }}>{item.label}</span>
                     {item.key==="timeline" && counts.scheduled>0 && (
@@ -1388,7 +1391,7 @@ export default function NotesUi() {
 
             <div style={{ margin:"4px 0", height:"1px", background:"var(--border)", opacity:0.5 }} />
 
-            <button className="nav-item" title="Profile" onClick={() => navigate("/profile")}>
+            <button type="button" className={`nav-item${activeSection==="profile"?" active":""}`} title="Profile" onClick={() => { setActiveSection("profile"); setActiveTag(null); }}>
               <span style={{ color:"var(--text3)" }}>{I.user()}</span>
               {!sidebarCollapsed && <span>My Profile</span>}
             </button>
@@ -1405,15 +1408,13 @@ export default function NotesUi() {
 
         {/* ── MAIN ── */}
         <div className="main-area">
-          {mainView === "calendar" && (
+          {activeSection === "profile" ? (
+            <ProfilePage totalNotes={counts.all} />
+          ) : mainView === "calendar" ? (
             <CalendarView notes={notes} onSelectNote={selectNote} onNewNote={createAndSchedule} />
-          )}
-
-          {mainView === "timeline" && (
+          ) : mainView === "timeline" ? (
             <TimelineView notes={notes} onSelectNote={selectNote} onMarkDone={markDone} onNewNote={createAndSchedule} />
-          )}
-
-          {mainView === "notes" && (
+          ) : mainView === "notes" ? (
             <>
               {/* Topbar */}
               <div style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 20px", borderBottom:"1px solid var(--border)", background:"var(--bg2)", flexShrink:0 }}>
@@ -1494,12 +1495,12 @@ export default function NotesUi() {
                 )}
               </div>
             </>
-          )}
+          ) : null}
         </div>
 
         {/* ── EDITOR ── */}
-        <div className={`editor-panel${editorOpen&&selectedNote&&mainView==="notes"?"":" hidden"}`}>
-          {editorOpen && selectedNote && mainView==="notes" && (
+        <div className={`editor-panel${editorOpen&&selectedNote&&mainView==="notes"&&activeSection!=="profile"?"":" hidden"}`}>
+          {editorOpen && selectedNote && mainView==="notes" && activeSection!=="profile" && (
             <EditorPanel note={selectedNote} onUpdate={updateNote} onClose={() => { setEditorOpen(false); setSelectedId(null); }}
               onFav={toggleFav} onPin={togglePin} onDelete={deleteNote} onExport={exportNote}
               onSchedule={(id) => setScheduleNoteId(id)} theme={theme} />

@@ -264,35 +264,35 @@ const G = `
   }
   .week-event:hover { background: var(--accent-bg); }
 
-  /* ── Beginner / empty-state guides ── */
+  /* ── Beginner / empty-state guides (no card — blends with section bg) ── */
   .empty-guide {
     max-width: 560px;
     margin: 0 auto;
     width: 100%;
-    padding: 28px 30px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    padding: 12px 8px 28px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
     animation: fadeUp 0.45s ease both;
   }
   .empty-guide--compact {
     max-width: none;
-    margin-bottom: 20px;
-    padding: 20px 22px;
-    border-radius: 16px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+    margin-bottom: 8px;
+    padding: 8px 0 16px;
+    border-radius: 0;
+    box-shadow: none;
   }
   .empty-guide--side {
     max-width: 100%;
     margin: 0;
-    padding: 16px 14px;
-    border-radius: 14px;
+    padding: 4px 0 12px;
+    border-radius: 0;
   }
   .empty-guide--side .empty-guide-head { margin-bottom: 14px; }
   .empty-guide--side .empty-guide-title { font-size: 16px !important; }
   .empty-guide--side .empty-guide-subtitle { font-size: 11.5px !important; max-width: none; }
-  .empty-guide--side .empty-guide-step { padding: 10px 12px; }
+  .empty-guide--side .empty-guide-step { padding: 10px 0; }
   .empty-guide--side .empty-guide-step-num { width: 26px; height: 26px; font-size: 11px; border-radius: 8px; }
   .empty-guide-head { text-align: center; margin-bottom: 22px; }
   .empty-guide-icon {
@@ -300,7 +300,7 @@ const G = `
     line-height: 1;
     display: block;
     margin-bottom: 12px;
-    filter: drop-shadow(0 4px 14px rgba(29,158,117,0.12));
+    filter: none;
   }
   .empty-guide--compact .empty-guide-icon { font-size: 32px; margin-bottom: 8px; }
   .empty-guide--side .empty-guide-icon { font-size: 28px; margin-bottom: 8px; }
@@ -347,14 +347,15 @@ const G = `
     display: flex;
     gap: 14px;
     align-items: flex-start;
-    padding: 14px 16px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 14px;
+    padding: 12px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
     text-align: left;
-    transition: border-color 0.2s;
+    opacity: 1;
   }
-  .empty-guide-step:hover { border-color: var(--accent-border); }
+  .empty-guide-step:last-child { border-bottom: none; padding-bottom: 0; }
   .empty-guide-step-num {
     flex-shrink: 0;
     width: 30px;

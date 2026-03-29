@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "./ThemeContext";
 import { useNavigate } from "react-router-dom";
+import ProfilePage from "./ProfilePage";
 
 /* ── Font injection ── */
 (() => {
@@ -691,9 +692,29 @@ function EditorPanel({ note, onUpdate, onClose, onFav, onPin, onDelete, onExport
   return editorContent;
 }
 
+const USER_ID = "123e4567-e89b-12d3-a456-426614174000";
+const API_BASE = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000";
+
+const mapToFrontend = (apiNote) => ({
+  id: apiNote.id,
+  title: apiNote.title,
+  content: apiNote.description || "",
+  category: "Personal",
+  tags: [],
+  color: "none",
+  pinned: apiNote.isImportant,
+  favorite: apiNote.isImportant,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  checklist: [],
+  reminder: null,
+  trashed: false,
+});
+
 /* ── MAIN APP ── */
 export default function NotesUi() {
-  const [notes, setNotes] = useState(SEED_NOTES);
+  const [notes, setNotes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("grid"); // grid | list | cols
   const { theme, toggleTheme } = useTheme();
@@ -711,37 +732,91 @@ export default function NotesUi() {
     setToast({ msg, icon, key: Date.now() });
   }, []);
 
+  const fetchNotes = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_BASE}/api/notes?userId=${USER_ID}`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotes(data.map(mapToFrontend));
+      } else {
+        showToast("Failed to fetch notes", "❌");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Error connecting to server", "❌");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
   /* ── CRUD ── */
-  const createNote = (template = null) => {
-    const n = {
-      id: genId(),
-      title: template?.name === "Quick Note" ? "" : template ? template.name : "",
-      content: template?.content || "",
-      category: "Personal",
-      tags: [],
-      color: "none",
-      pinned: false,
-      favorite: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      checklist: [],
-      reminder: null,
-      trashed: false,
+  const createNote = async (template = null) => {
+    const payload = {
+      userId: USER_ID,
+      title: template?.name === "Quick Note" ? "" : template ? template.name : "Untitled",
+      description: template?.content || "",
+      isImportant: false
     };
-    setNotes(prev => [n, ...prev]);
-    setSelectedId(n.id);
-    setEditorOpen(true);
-    setShowTemplates(false);
-    showToast("Note created", "✦");
+    try {
+      const res = await fetch(`${API_BASE}/api/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const newApiNote = await res.json();
+        const n = mapToFrontend(newApiNote);
+        setNotes(prev => [n, ...prev]);
+        setSelectedId(n.id);
+        setEditorOpen(true);
+        setShowTemplates(false);
+        showToast("Note created", "✦");
+      } else {
+        showToast("Failed to create note", "❌");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Error connecting to server", "❌");
+    }
   };
 
   const updateNote = useCallback((id, patch) => {
-    setNotes(prev => prev.map(n => n.id === id ? { ...n, ...patch } : n));
+    setNotes(prev => {
+      const newNotes = prev.map(n => n.id === id ? { ...n, ...patch } : n);
+      const noteToUpdate = newNotes.find(n => n.id === id);
+      
+      if (noteToUpdate && typeof id === 'string') {
+        const payload = {
+          userId: USER_ID,
+          title: noteToUpdate.title || "Untitled",
+          description: noteToUpdate.content || "",
+          isImportant: noteToUpdate.pinned || noteToUpdate.favorite || false
+        };
+        fetch(`${API_BASE}/api/notes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).catch(console.error);
+      }
+      return newNotes;
+    });
   }, []);
 
   const deleteNote = useCallback((id) => {
     const note = notes.find(n => n.id === id);
-    if (note?.trashed) {
+    if (!note) return;
+
+    if (note.trashed) {
+      if (typeof id === 'string') {
+        fetch(`${API_BASE}/api/notes/${id}?userId=${USER_ID}`, {
+          method: "DELETE"
+        }).catch(console.error);
+      }
       setNotes(prev => prev.filter(n => n.id !== id));
       showToast("Permanently deleted", "🗑️");
     } else {
@@ -996,9 +1071,9 @@ export default function NotesUi() {
 
             <div style={{ margin: "4px 0", height: "1px", background: "var(--border)", opacity: 0.5 }} />
 
-            <button className="nav-item" title="Profile" onClick={() => navigate("/profile")}>
-              <span style={{ color: "var(--text3)" }}>{I.user()}</span>
-              {!sidebarCollapsed && <span>My Profile</span>}
+            <button className={`nav-item${activeSection === "profile" ? " active" : ""}`} title="Profile" onClick={() => { setActiveSection("profile"); setActiveTag(null); }}>
+              <span style={{ flexShrink: 0, color: "var(--text3)" }}>{I.user()}</span>
+              {!sidebarCollapsed && <span style={{ flex: 1 }}>My Profile</span>}
             </button>
 
             <button className="nav-item" onClick={toggleTheme} title="Toggle theme">
@@ -1015,13 +1090,16 @@ export default function NotesUi() {
 
         {/* ── MAIN ── */}
         <div className="main-area">
-
-          {/* Topbar */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: "10px",
-            padding: "12px 20px", borderBottom: "1px solid var(--border)",
-            background: "var(--bg2)", flexShrink: 0,
-          }}>
+          {activeSection === "profile" ? (
+            <ProfilePage totalNotes={counts.all} />
+          ) : (
+            <>
+              {/* Topbar */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: "10px",
+                padding: "12px 20px", borderBottom: "1px solid var(--border)",
+                background: "var(--bg2)", flexShrink: 0,
+              }}>
             {/* Search */}
             <div style={{ position: "relative", flex: 1, maxWidth: "360px" }}>
               <span style={{ position: "absolute", left: "11px", top: "50%", transform: "translateY(-50%)", color: "var(--text4)", pointerEvents: "none" }}>
@@ -1142,7 +1220,9 @@ export default function NotesUi() {
                 ))}
               </div>
             )}
-          </div>
+            </div>
+            </>
+          )}
         </div>
 
         {/* ── EDITOR ── */}

@@ -98,3 +98,34 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+
+/* Application settings overrides */
+
+[data-fontsize="small"] {
+  zoom: 0.9;
+}
+[data-fontsize="large"] {
+  zoom: 1.1;
+}
+
+[data-compact="true"] .note-card {
+  padding: 8px !important;
+  gap: 8px !important;
+}
+[data-compact="true"] .sidebar-nav button,
+[data-compact="true"] .btn-ghost,
+[data-compact="true"] .btn-primary {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+[data-compact="true"] .editor-panel {
+  padding: 12px !important;
+}
+[data-compact="true"] {
+  --sidebar-w: 220px;
+}
+
+[data-animations="false"] * {
+  transition: none !important;
+  animation: none !important;
+}

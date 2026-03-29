@@ -264,6 +264,136 @@ const G = `
   }
   .week-event:hover { background: var(--accent-bg); }
 
+  /* ── Beginner / empty-state guides ── */
+  .empty-guide {
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 28px 30px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    animation: fadeUp 0.45s ease both;
+  }
+  .empty-guide--compact {
+    max-width: none;
+    margin-bottom: 20px;
+    padding: 20px 22px;
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  }
+  .empty-guide--side {
+    max-width: 100%;
+    margin: 0;
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+  .empty-guide--side .empty-guide-head { margin-bottom: 14px; }
+  .empty-guide--side .empty-guide-title { font-size: 16px !important; }
+  .empty-guide--side .empty-guide-subtitle { font-size: 11.5px !important; max-width: none; }
+  .empty-guide--side .empty-guide-step { padding: 10px 12px; }
+  .empty-guide--side .empty-guide-step-num { width: 26px; height: 26px; font-size: 11px; border-radius: 8px; }
+  .empty-guide-head { text-align: center; margin-bottom: 22px; }
+  .empty-guide-icon {
+    font-size: 40px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 14px rgba(29,158,117,0.12));
+  }
+  .empty-guide--compact .empty-guide-icon { font-size: 32px; margin-bottom: 8px; }
+  .empty-guide--side .empty-guide-icon { font-size: 28px; margin-bottom: 8px; }
+  .empty-guide-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .empty-guide-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+    line-height: 1.2;
+  }
+  .empty-guide--compact .empty-guide-title { font-size: 18px; }
+  .empty-guide-subtitle {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.55;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .empty-guide-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .empty-guide-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: left;
+    transition: border-color 0.2s;
+  }
+  .empty-guide-step:hover { border-color: var(--accent-border); }
+  .empty-guide-step-num {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .empty-guide-step strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .empty-guide-step p {
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .empty-guide-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 22px;
+  }
+  .empty-guide--compact .empty-guide-actions,
+  .empty-guide--side .empty-guide-actions { margin-top: 14px; }
+
   .skeleton {
     background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
     background-size: 400px 100%;
@@ -478,6 +608,206 @@ function Toast({ msg, icon, onDone }) {
   );
 }
 
+/* ── Beginner empty-state guides ── */
+function BeginnerGuidePanel({ icon, badge, title, subtitle, steps, compact, side, primaryAction }) {
+  return (
+    <div className={`empty-guide${compact ? " empty-guide--compact" : ""}${side ? " empty-guide--side" : ""}`}>
+      <div className="empty-guide-head">
+        <span className="empty-guide-icon" aria-hidden>{icon}</span>
+        {badge && <span className="empty-guide-badge">{badge}</span>}
+        <h3 className="empty-guide-title">{title}</h3>
+        <p className="empty-guide-subtitle">{subtitle}</p>
+      </div>
+      <ul className="empty-guide-steps">
+        {steps.map((s, i) => (
+          <li key={i} className="empty-guide-step">
+            <span className="empty-guide-step-num">{i + 1}</span>
+            <div>
+              <strong>{s.t}</strong>
+              <p>{s.d}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {primaryAction ? <div className="empty-guide-actions">{primaryAction}</div> : null}
+    </div>
+  );
+}
+
+function getNotesEmptyGuide({ activeSection, activeTag, search }) {
+  if (search?.trim()) {
+    return {
+      icon: "🔍",
+      badge: "Search",
+      title: "No notes match your search",
+      subtitle: "Try a simpler keyword, or clear the box to see everything in this sidebar section again.",
+      steps: [
+        { t: "Shorten the query", d: "Search scans titles, note body, and tags — one strong word often works best." },
+        { t: "Clear the search field", d: "Empty the box in the top bar to remove the text filter instantly." },
+        { t: "Widen the scope", d: "Click All Notes in the sidebar if you are inside Favourites, Pinned, Scheduled, or a category." },
+      ],
+      showNewNote: false,
+      showTemplates: false,
+    };
+  }
+  if (activeTag) {
+    return {
+      icon: "🏷️",
+      badge: "Tags",
+      title: `No notes use “#${activeTag}” yet`,
+      subtitle: "Tags group related notes. Add this tag from the editor so it appears in the sidebar filter.",
+      steps: [
+        { t: "Open or create a note", d: "Pick a card or press New note — the editor opens on the right." },
+        { t: "Scroll to the tag row", d: "At the bottom of the editor, type in the small + tag field." },
+        { t: "Press Enter to save", d: "The tag becomes a pill; click it in the sidebar anytime to filter matching notes." },
+      ],
+      showNewNote: true,
+      showTemplates: false,
+    };
+  }
+  switch (activeSection) {
+    case "favorites":
+      return {
+        icon: "⭐",
+        badge: "Favourites",
+        title: "No favourite notes yet",
+        subtitle: "Star the notes you open often — they collect here for one-click access.",
+        steps: [
+          { t: "Hover a note card", d: "Each card has a star in the top-right corner." },
+          { t: "Click the star", d: "Filled means favourite; click again to remove from this list." },
+          { t: "Or use the editor", d: "Open a note and tap the star in the toolbar for the same effect." },
+        ],
+        showNewNote: true,
+        showTemplates: false,
+      };
+    case "pinned":
+      return {
+        icon: "📌",
+        badge: "Pinned",
+        title: "No pinned notes",
+        subtitle: "Pinned notes stay at the top of All Notes so priorities never sink in the list.",
+        steps: [
+          { t: "Open the ⋮ menu", d: "On any note card, use the three-dot menu on the right." },
+          { t: "Choose Pin", d: "The card gains a corner ribbon and sorts above unpinned notes." },
+          { t: "Unpin anytime", d: "Use the same menu or the pin icon in the editor toolbar." },
+        ],
+        showNewNote: true,
+        showTemplates: false,
+      };
+    case "scheduled":
+      return {
+        icon: "🗓️",
+        badge: "Scheduled",
+        title: "No scheduled notes",
+        subtitle: "Give a note a date and time so it appears in Calendar and Timeline.",
+        steps: [
+          { t: "Open a note", d: "Create one with New note or select an existing card." },
+          { t: "Tap the clock", d: "Use Schedule in the ⋮ menu on the card, or the clock icon in the editor." },
+          { t: "Pick date & time", d: "Save — the note shows up here, on the Calendar grid, and on the Timeline." },
+        ],
+        showNewNote: true,
+        showTemplates: false,
+      };
+    case "trash":
+      return {
+        icon: "🗑️",
+        badge: "Trash",
+        title: "Trash is empty",
+        subtitle: "Deleted notes land here first so you can recover mistakes before they are gone for good.",
+        steps: [
+          { t: "Move items to trash", d: "From a note card menu or the editor, choose Delete — the note is removed from your library but kept here." },
+          { t: "Restore if needed", d: "Open Trash, then Restore to put the note back in All Notes." },
+          { t: "Delete forever", d: "Use Delete in Trash only when you are sure — that removes it from the server." },
+        ],
+        showNewNote: false,
+        showTemplates: false,
+      };
+    default:
+      if (activeSection.startsWith("cat:")) {
+        const cat = activeSection.slice(4);
+        return {
+          icon: "📁",
+          badge: "Category",
+          title: `No notes in “${cat}”`,
+          subtitle: "Categories help you filter the sidebar. New notes start as Personal until you align them with your workflow.",
+          steps: [
+            { t: "Create notes from this app", d: "Use New note — your workspace stores category on the server with each note." },
+            { t: "Watch the pill on cards", d: "The category label on each card reflects how that note is stored." },
+            { t: "Use All Notes", d: "Switch back to see every note regardless of category while you build your library." },
+          ],
+          showNewNote: true,
+          showTemplates: true,
+        };
+      }
+      return {
+        icon: "✦",
+        badge: "Start here",
+        title: "Your notes workspace",
+        subtitle: "Capture ideas, coursework, and tasks in one place. Everything saves to your account automatically when you edit.",
+        steps: [
+          { t: "Create your first note", d: "Click New note in the sidebar (or the + icon when the sidebar is collapsed)." },
+          { t: "Try a template", d: "Use the template button next to New note for meeting notes, study outlines, journals, and more." },
+          { t: "Explore views", d: "Switch to Calendar or Timeline in the sidebar after you add a schedule to any note." },
+          { t: "Organise", d: "Star favourites, pin priorities, add tags in the editor, and use Delete to move items to Trash safely." },
+        ],
+        showNewNote: true,
+        showTemplates: true,
+      };
+  }
+}
+
+function getTimelineEmptyGuide(filter, scheduledTotal) {
+  if (scheduledTotal === 0) {
+    return {
+      icon: "⏱️",
+      badge: "Timeline",
+      title: "See your day in order",
+      subtitle: "The timeline lists every note that has a schedule. Nothing appears here until at least one note has a date and time.",
+      steps: [
+        { t: "Go to Notes", d: "Use the Views → Notes item in the sidebar." },
+        { t: "Open or create a note", d: "Write your title and content as usual." },
+        { t: "Add a schedule", d: "Clock icon in the editor, or Schedule in the card ⋮ menu — set date, start, end, and optional repeat." },
+        { t: "Come back to Timeline", d: "Use filters Today, Upcoming, or All to focus on what matters." },
+      ],
+    };
+  }
+  if (filter === "today") {
+    return {
+      icon: "☀️",
+      badge: "Today",
+      title: "Nothing scheduled for today",
+      subtitle: "You have other scheduled notes — they fall on different days. Try Upcoming or All, or add something for today.",
+      steps: [
+        { t: "Check Upcoming", d: "Switch the filter to see future dated notes." },
+        { t: "Schedule for today", d: "Open a note, add a schedule, and set today’s date in the picker." },
+        { t: "Quick create", d: "Use Schedule above — it creates a note and opens the schedule dialog for you." },
+      ],
+    };
+  }
+  if (filter === "upcoming") {
+    return {
+      icon: "📆",
+      badge: "Upcoming",
+      title: "No upcoming events",
+      subtitle: "Every scheduled note you have is today or in the past for this filter. Try Today or All.",
+      steps: [
+        { t: "View All", d: "Shows every scheduled note regardless of date." },
+        { t: "Add a future date", d: "Edit a note’s schedule and pick a day after today." },
+      ],
+    };
+  }
+  return {
+    icon: "🗓️",
+    badge: "Timeline",
+    title: "No scheduled notes",
+    subtitle: "Use the steps below to connect your first note to the calendar.",
+    steps: [
+      { t: "Add a schedule to any note", d: "From Notes, open a note and use the clock toolbar button." },
+      { t: "Confirm date & time", d: "Save the modal — the note joins this timeline automatically." },
+    ],
+  };
+}
+
 /* ── Schedule Modal ── */
 function ScheduleModal({ note, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -598,6 +928,8 @@ function CalendarView({ notes, onSelectNote, onNewNote }) {
     });
   })();
 
+  const hasScheduledNotes = notes.some((n) => n.schedule && !n.trashed);
+
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
       {/* Header */}
@@ -632,7 +964,27 @@ function CalendarView({ notes, onSelectNote, onNewNote }) {
 
       <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
         {/* Month grid */}
-        <div style={{ flex:1, overflow:"auto", padding:"16px" }}>
+        <div style={{ flex:1, overflow:"auto", padding:"16px", display:"flex", flexDirection:"column" }}>
+          {!hasScheduledNotes && (
+            <BeginnerGuidePanel
+              compact
+              icon="📅"
+              badge="Calendar"
+              title="No events yet — here is how to fill your calendar"
+              subtitle="Dots and coloured chips on days come from notes that include a schedule. The grid is always interactive; add your first timed note to see it come alive."
+              steps={[
+                { t: "Create or open a note", d: "From Notes, use New note or click any card to open the editor." },
+                { t: "Add a schedule", d: "Tap the clock in the editor toolbar, or Schedule in the ⋮ menu on a card." },
+                { t: "Choose the day", d: "Pick the date — that day will show dots in Month view and blocks in Week view." },
+                { t: "Use New event", d: "The button above creates a blank note and opens the schedule dialog for you." },
+              ]}
+              primaryAction={
+                <button type="button" className="btn-primary" onClick={onNewNote} style={{ fontSize:"12.5px", padding:"9px 16px" }}>
+                  {I.plus()} New event
+                </button>
+              }
+            />
+          )}
           {calView === "month" ? (
             <>
               {/* Day headers */}
@@ -732,10 +1084,23 @@ function CalendarView({ notes, onSelectNote, onNewNote }) {
           </div>
           <div style={{ flex:1, overflow:"auto", padding:"10px" }}>
             {selectedDayNotes.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"32px 16px" }}>
-                <div style={{ fontSize:"24px", marginBottom:"8px" }}>📭</div>
-                <p style={{ fontSize:"12px", color:"var(--text4)" }}>No events</p>
-              </div>
+              <BeginnerGuidePanel
+                side
+                icon="📭"
+                badge="This day"
+                title="No events on this date"
+                subtitle={`${new Date(selectedDay+"T12:00:00").toLocaleDateString("en-US",{ weekday:"long", month:"long", day:"numeric" })} has no scheduled notes. Add one or pick another day on the grid.`}
+                steps={[
+                  { t: "Schedule a note", d: "Open any note, tap the clock, and set this date in the date picker." },
+                  { t: "Or start fresh", d: "Use New event in the header — a note is created and the schedule modal opens." },
+                  { t: "Browse the month", d: "Days with schedules show dots; click them to preview what is planned." },
+                ]}
+                primaryAction={
+                  <button type="button" className="btn-primary" onClick={onNewNote} style={{ fontSize:"12px", padding:"8px 14px", width:"100%" }}>
+                    {I.plus()} Add event for this day
+                  </button>
+                }
+              />
             ) : selectedDayNotes.map(n => (
               <div key={n.id} onClick={() => onSelectNote(n.id)} style={{
                 background:"var(--bg3)", border:"1px solid var(--border)", borderRadius:"10px",
@@ -840,15 +1205,25 @@ function TimelineView({ notes, onSelectNote, onMarkDone, onNewNote }) {
       {/* Timeline body */}
       <div style={{ flex:1, overflow:"auto", padding:"24px 32px" }}>
         {filtered.length === 0 ? (
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"50%", gap:"12px" }}>
-            <div style={{ fontSize:"36px" }}>🗓️</div>
-            <p style={{ fontSize:"14px", color:"var(--text3)", fontFamily:"'Instrument Serif',serif" }}>
-              {filter==="today" ? "Nothing scheduled for today" : "No scheduled notes"}
-            </p>
-            <button className="btn-primary" onClick={onNewNote} style={{ fontSize:"13px" }}>
-              {I.plus()} Schedule a note
-            </button>
-          </div>
+          (() => {
+            const g = getTimelineEmptyGuide(filter, scheduled.length);
+            return (
+              <div style={{ display:"flex", justifyContent:"center", alignItems:"flex-start", minHeight:"50%", padding:"12px 0 32px" }}>
+                <BeginnerGuidePanel
+                  icon={g.icon}
+                  badge={g.badge}
+                  title={g.title}
+                  subtitle={g.subtitle}
+                  steps={g.steps}
+                  primaryAction={
+                    <button type="button" className="btn-primary" onClick={onNewNote} style={{ fontSize:"13px", padding:"10px 20px" }}>
+                      {I.plus()} Schedule a note
+                    </button>
+                  }
+                />
+              </div>
+            );
+          })()
         ) : (
           <div style={{ maxWidth:"640px", margin:"0 auto" }}>
             {/* Group by date */}
@@ -1695,19 +2070,35 @@ export default function NotesUi() {
                     <div className="skeleton" style={{ width:"160px", height:"14px" }} />
                   </div>
                 ) : visibleNotes.length===0 ? (
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"60%", gap:"12px", animation:"fadeIn 0.3s ease" }}>
-                    <div style={{ width:"52px", height:"52px", background:"var(--bg3)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--text4)", fontSize:"22px" }}>
-                      {search?"🔍":activeSection==="trash"?"🗑️":"✦"}
-                    </div>
-                    <p style={{ fontSize:"14px", color:"var(--text3)", fontFamily:"'Instrument Serif',serif" }}>
-                      {search?"No notes found":activeSection==="trash"?"Trash is empty":"No notes yet"}
-                    </p>
-                    {!search && activeSection==="all" && (
-                      <button className="btn-primary" onClick={() => createNote()} style={{ marginTop:"4px", fontSize:"13px", padding:"10px 20px" }}>
-                        {I.plus()} Create your first note
-                      </button>
-                    )}
-                  </div>
+                  (() => {
+                    const g = getNotesEmptyGuide({ activeSection, activeTag, search });
+                    const actions = (
+                      <>
+                        {g.showNewNote && (
+                          <button type="button" className="btn-primary" onClick={() => createNote()} style={{ fontSize:"13px", padding:"10px 20px" }}>
+                            {I.plus()} New note
+                          </button>
+                        )}
+                        {g.showTemplates && (
+                          <button type="button" className="btn-ghost" onClick={() => setShowTemplates(true)} style={{ fontSize:"13px", padding:"10px 18px" }}>
+                            {I.template()} Browse templates
+                          </button>
+                        )}
+                      </>
+                    );
+                    return (
+                      <div style={{ display:"flex", justifyContent:"center", alignItems:"flex-start", padding:"8px 0 40px", minHeight:"55%", animation:"fadeIn 0.35s ease" }}>
+                        <BeginnerGuidePanel
+                          icon={g.icon}
+                          badge={g.badge}
+                          title={g.title}
+                          subtitle={g.subtitle}
+                          steps={g.steps}
+                          primaryAction={g.showNewNote || g.showTemplates ? actions : null}
+                        />
+                      </div>
+                    );
+                  })()
                 ) : (
                   <div style={{ display:"grid", gridTemplateColumns: gridCols, gap:"12px", animation:"fadeIn 0.2s ease" }}>
                     {visibleNotes.map(note => (

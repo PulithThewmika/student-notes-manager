@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "./ThemeContext";
 
+import { useGoogleLogin } from '@react-oauth/google';
+
 let API_ROOT = import.meta.env.VITE_AZURE_BACKEND || "http://localhost:5000";
 if (API_ROOT.endsWith("/api/notes")) {
   API_ROOT = API_ROOT.replace(/\/api\/notes\/?$/, "");
@@ -233,6 +235,26 @@ export default function LoginPage() {
   const [done, setDone] = useState(false);
   const [errors, setErrors] = useState({});
   const [scrolled, setScrolled] = useState(false);
+
+  const login = useGoogleLogin({
+    onSuccess: async tokenResponse => {
+      try {
+        setLoading(true);
+        const res = await axios.post(`${API_AUTH}/google-login`, {
+          credential: tokenResponse.access_token,
+        });
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        
+        setDone(true);
+        setTimeout(() => navigate("/app"), 900);
+      } catch (err) {
+        const msg = err.response?.data?.error || "Google login failed";
+        setErrors({ root: msg });
+        setLoading(false);
+      }
+    },
+  });
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);

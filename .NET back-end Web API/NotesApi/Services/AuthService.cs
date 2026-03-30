@@ -1,3 +1,5 @@
+using Google.Apis.Auth;
+
 namespace NotesApi.Services;
 
 using MongoDB.Driver;
@@ -8,11 +10,13 @@ public class AuthService : IAuthService
 {
     private readonly IMongoCollection<User> _usersCollection;
     private readonly IJwtService _jwtService;
+    private readonly IConfiguration _configuration;
 
-    public AuthService(IMongoDatabase database, IJwtService jwtService)
+    public AuthService(IMongoDatabase database, IJwtService jwtService, IConfiguration configuration)
     {
         _usersCollection = database.GetCollection<User>("users");
         _jwtService = jwtService;
+        _configuration = configuration;
     }
 
     public async Task<AuthResponse?> RegisterAsync(AuthInput input)
@@ -61,6 +65,38 @@ public class AuthService : IAuthService
         { 
             Token = token, 
             User = new UserResponse { Id = user.Id!, Username = user.Username } 
+        };
+    }
+
+    public async Task<AuthResponse?> GoogleLoginAsync(string credential)
+    {
+        var settings = new GoogleJsonWebSignature.ValidationSettings
+        {
+            Audience = new[] { _configuration["GoogleAuth:ClientId"] }
+        };
+
+        var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
+
+        var user = await _usersCollection.Find(u => u.Email == payload.Email).FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            // Register new user
+            user = new User
+            {
+                Email = payload.Email,
+                Username = payload.Name,
+                // Assign a strong random password, as they won't use it to login
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString())
+            };
+            await _usersCollection.InsertOneAsync(user);
+        }
+
+        var token = _jwtService.GenerateToken(user);
+        return new AuthResponse
+        {
+            Token = token,
+            User = new UserResponse { Id = user.Id!, Username = user.Username }
         };
     }
 }

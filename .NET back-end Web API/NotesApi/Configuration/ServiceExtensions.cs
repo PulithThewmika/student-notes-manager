@@ -54,8 +54,10 @@ public static class ServiceExtensions
 
     public static void AddApplicationServices(this IServiceCollection services)
     {
+        services.AddHttpClient();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INotesService, NotesService>();
+        services.AddScoped<ITrashService, TrashService>();
     }
 }

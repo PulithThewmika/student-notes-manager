@@ -42,5 +42,21 @@ public static class AuthEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         });
+
+        group.MapPost("/google-login", async (IAuthService authService, [FromBody] GoogleAuthInput input) =>
+        {
+            try
+            {
+                var response = await authService.GoogleLoginAsync(input.Credential);
+                if (response == null)
+                    return Results.Unauthorized();
+
+                return Results.Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
     }
 }

@@ -210,3 +210,4 @@ dist-ssr
 .env.test.local
 .env.production.local
 appsettings.Development.json
+.NET back-end Web API/NotesApi/appsettings.json

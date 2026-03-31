@@ -11,8 +11,8 @@ public class NotesService : INotesService
 
     public NotesService(IMongoDatabase database, IConfiguration configuration)
     {
-        var collectionName = Environment.GetEnvironmentVariable("MONGO_COLLECTION_NAME") 
-            ?? configuration["MongoDb:NotesCollection"] 
+        var collectionName = Environment.GetEnvironmentVariable("MONGO_COLLECTION_NAME")
+            ?? configuration["MongoDb:NotesCollection"]
             ?? "notes";
         _notesCollection = database.GetCollection<Note>(collectionName);
     }
@@ -26,28 +26,10 @@ public class NotesService : INotesService
 
     public async Task<Note> CreateAsync(string userId, NoteInput input)
     {
-        if (string.IsNullOrWhiteSpace(input.Title) || string.IsNullOrWhiteSpace(input.Description))
-            throw new ArgumentException("Title and Description are required.");
-
-        var newNote = new Note
-        {
-            UserId = userId,
-            Title = input.Title,
-            Description = input.Description,
-            IsImportant = input.IsImportant
-        };
-
-        await _notesCollection.InsertOneAsync(newNote);
-        return newNote;
-    }
-
-    public async Task<bool> DeleteAsync(string id, string userId)
-    {
-        if (!ObjectId.TryParse(id, out _))
-            throw new ArgumentException("Invalid ID format.");
-
-        var result = await _notesCollection.DeleteOneAsync(n => n.Id == id && n.UserId == userId);
-        return result.DeletedCount > 0;
+        var now = DateTime.UtcNow;
+        var note = BuildNoteFromInput(userId, input, now, now);
+        await _notesCollection.InsertOneAsync(note);
+        return note;
     }
 
     public async Task<Note?> UpdateAsync(string id, string userId, NoteInput input)
@@ -55,16 +37,44 @@ public class NotesService : INotesService
         if (!ObjectId.TryParse(id, out _))
             throw new ArgumentException("Invalid ID format.");
 
-        if (string.IsNullOrWhiteSpace(input.Title) || string.IsNullOrWhiteSpace(input.Description))
-            throw new ArgumentException("Title and Description are required.");
+        var existing = await _notesCollection.Find(n => n.Id == id && n.UserId == userId).FirstOrDefaultAsync();
+        if (existing == null)
+            return null;
 
-        var update = Builders<Note>.Update
-            .Set(n => n.Title, input.Title)
-            .Set(n => n.Description, input.Description)
-            .Set(n => n.IsImportant, input.IsImportant);
+        var created = existing.CreatedAt == default ? DateTime.UtcNow : existing.CreatedAt;
+        var now = DateTime.UtcNow;
+        var merged = BuildNoteFromInput(userId, input, created, now);
+        merged.Id = id;
 
-        var options = new FindOneAndUpdateOptions<Note> { ReturnDocument = ReturnDocument.After };
-        return await _notesCollection.FindOneAndUpdateAsync(
-            n => n.Id == id && n.UserId == userId, update, options);
+        var replaceResult = await _notesCollection.ReplaceOneAsync(n => n.Id == id && n.UserId == userId, merged);
+        return replaceResult.MatchedCount > 0 ? merged : null;
+    }
+
+    private static Note BuildNoteFromInput(string userId, NoteInput input, DateTime createdAt, DateTime updatedAt)
+    {
+        var title = string.IsNullOrWhiteSpace(input.Title) ? "Untitled" : input.Title.Trim();
+        var description = input.Description ?? string.Empty;
+        var category = string.IsNullOrWhiteSpace(input.Category) ? "Personal" : input.Category.Trim();
+        var color = string.IsNullOrWhiteSpace(input.Color) ? "none" : input.Color.Trim();
+        var tags = input.Tags ?? new List<string>();
+        var checklist = string.IsNullOrWhiteSpace(input.ChecklistJson) ? "[]" : input.ChecklistJson!;
+        var schedule = string.IsNullOrWhiteSpace(input.ScheduleJson) ? null : input.ScheduleJson;
+
+        return new Note
+        {
+            UserId = userId,
+            Title = title,
+            Description = description,
+            IsPinned = input.IsPinned,
+            IsFavorite = input.IsFavorite,
+            IsImportant = input.IsImportant || input.IsPinned || input.IsFavorite,
+            Category = category,
+            Tags = tags,
+            Color = color,
+            ChecklistJson = checklist,
+            ScheduleJson = schedule,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
     }
 }

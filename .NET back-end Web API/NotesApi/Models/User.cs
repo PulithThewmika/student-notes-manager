@@ -19,4 +19,10 @@ public class User
 
     [JsonIgnore]
     public string PasswordHash { get; set; } = string.Empty;
+
+    [JsonPropertyName("googleId")]
+    public string? GoogleId { get; set; }
+
+    [JsonPropertyName("avatarUrl")]
+    public string? AvatarUrl { get; set; }
 }

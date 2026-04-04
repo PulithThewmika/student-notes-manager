@@ -14,7 +14,8 @@ A full-stack web application demonstrating the deployment of a React front-end a
 - Vite (Build Tool)
 - Axios (HTTP Client)
 - Deployed on **Azure Static Web Apps**
-- **Anonymous Authentication:** Uses `localStorage` UUIDs to persist data securely per user without full logins.
+- **Authentication:** Standard email/password registration using BCrypt password hashing, paired with JSON Web Tokens (JWT) for secure session persistence.
+- **Google OAuth2:** Integrated "Sign In With Google" utilizing the `@react-oauth/google` provider.
 
 **Back-end:**
 - .NET 9.0 ASP.NET Core Web API
@@ -83,3 +84,4 @@ To successfully run the GitHub Actions workflows, configure the following secret
 - `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` — Used to authenticate and deploy to the Azure App Service via OIDC.
 - `AZURE_STATIC_WEB_APPS_API_TOKEN_...` — Deployment token for the Azure Static Web App auto-generated during Azure portal creation.
 - `AZURE_BACKEND` — The public URL of your deployed Azure Web App's endpoint (e.g., `https://<your-app-name>.azurewebsites.net/api/notes`).
+- `JWT_SECRET` — A secure 32+ character signing key stored in the Azure deployment configuration.

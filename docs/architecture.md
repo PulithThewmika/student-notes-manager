@@ -20,15 +20,16 @@ The application is divided into two primary tiers: a client-side frontend and a 
 - **Responsibility:** Receives HTTP requests, handles anonymous user isolation, processes business logic (validation, data manipulation), and stores/returns JSON data. Also provides a `/health` endpoint for monitoring.
 - **Hosting:** **Azure App Service (Web Apps)**
 
-## 2. Data Flow & Security (Anonymous Sessions)
+## 2. Data Flow & Security (JWT Authentication & Google OAuth)
 
-In this iteration, the system uses "headless" or anonymous sessions instead of a full login system to reduce friction while still mapping data uniquely per person:
+The system uses a robust JSON Web Token (JWT) based authentication model, alongside Google OAuth2 integration for a seamless login experience:
 
-1. When a user opens the application, the React frontend generates a unique UUID (if one does not already exist) and persists it using the browser's `localStorage`.
-2. Every subsequent HTTP request to the .NET 9 API (via Axios) includes this generated `userId` as either a query parameter or body property.
-3. The API controller strictly filters and maps all queries and mutations against this `userId`, guaranteeing users can only interact with their own resources.
-4. The backend interacts directly with MongoDB to persist or adjust records safely logic-gated by the `userId`.
-5. The React front-end receives the response and updates its local state, seamlessly reflecting the changes.
+1. A user can either register an account normally (triggering BCrypt password hashing) or log in securely via the Google OAuth button on the React frontend.
+2. The .NET API validates the credentials (or Google OAuth access tokens via the server-side Google APIs) and produces a signed JWT.
+3. The React frontend stores this JWT and the user's profile details in its state/local storage.
+4. Every subsequent HTTP request to the .NET 9 API (via Axios) includes this JWT in the `Authorization: Bearer <token>` header.
+5. The API endpoints are protected by `[Authorize]` (or `.RequireAuthorization()`), ensuring only authenticated requests pass. The `userId` is extracted securely from the token's claims, preventing users from accessing others' data.
+6. The backend interacts directly with MongoDB to persist or adjust records safely, strictly logic-gated by the `userId`.
 
 ## 3. Cloud Architecture (Azure)
 

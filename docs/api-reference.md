@@ -8,7 +8,62 @@ The backend exposes a simple set of RESTful endpoints to manage student notes.
 
 ---
 
-## Endpoints
+## Auth Endpoints
+
+### 1. Register User
+Registers a new user and returns a JWT token.
+
+- **POST** `/api/auth/register`
+- **Request Body:** JSON
+```json
+{
+  "email": "user@example.com",
+  "username": "newuser",
+  "password": "Password123"
+}
+```
+- **Success Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUz...",
+  "user": {
+    "id": "64a2b1...",
+    "username": "newuser",
+    "email": "user@example.com",
+    "avatarUrl": null
+  }
+}
+```
+
+### 2. Login
+Logs in an existing user and returns a JWT token.
+
+- **POST** `/api/auth/login`
+- **Request Body:** JSON
+```json
+{
+  "username": "newuser",
+  "password": "Password123"
+}
+```
+
+### 3. Google OAuth Login
+Logs in or registers a user via Google OAuth Access Token.
+
+- **POST** `/api/auth/google-login`
+- **Request Body:** JSON
+```json
+{
+  "credential": "<Google_OAuth_Access_Token>"
+}
+```
+
+---
+
+## Notes Endpoints (Requires JWT)
+
+*All endpoints in this section require the `Authorization: Bearer <token>` header.*
+
 
 ### 1. Health Check
 Checks if the API is up and running.
@@ -20,12 +75,11 @@ Checks if the API is up and running.
 
 ---
 
-### 2. Get All Notes
-Retrieves the complete list of notes for a specific user, ordered descending.
+### 1. Get All Notes
+Retrieves the complete list of notes for the authenticated user, ordered descending.
 
-- **GET** `/api/notes?userId={userId}`
-- **URL Parameters:**
-  - `userId` (string, required): A unique identifier for the specific user's session (e.g., UUID format).
+- **GET** `/api/notes`
+- **Headers:** `Authorization: Bearer <token>`
 - **Response Format:** JSON
 - **Success Response (200 OK):**
 ```json
@@ -41,18 +95,18 @@ Retrieves the complete list of notes for a specific user, ordered descending.
 ```
 - **Status Codes:**
   - `200 OK`: Request successful.
-  - `400 Bad Request`: `userId` was not provided.
+  - `401 Unauthorized`: Token is missing or invalid.
 
 ---
 
-### 3. Create a Note
-Creates a new note associated with a user ID.
+### 2. Create a Note
+Creates a new note associated with the authenticated user.
 
 - **POST** `/api/notes`
+- **Headers:** `Authorization: Bearer <token>`
 - **Request Body:** JSON
 ```json
 {
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
   "title": "Learn React",
   "description": "Finish the useEffect module",
   "isImportant": false
@@ -64,16 +118,16 @@ Creates a new note associated with a user ID.
 
 ---
 
-### 4. Update a Note
+### 3. Update a Note
 Updates an existing note completely.
 
 - **PUT** `/api/notes/{id}`
+- **Headers:** `Authorization: Bearer <token>`
 - **URL Parameters:**
   - `id` (string): The unique MongoDB ObjectId of the note to update.
 - **Request Body:** JSON
 ```json
 {
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
   "title": "Updated Title",
   "description": "Updated description content",
   "isImportant": true
@@ -86,14 +140,15 @@ Updates an existing note completely.
 
 ---
 
-### 5. Delete a Note
-Deletes a specific note.
+### 4. Delete / Trash a Note
+Moves a specific note to the trash for the authenticated user.
 
-- **DELETE** `/api/notes/{id}?userId={userId}`
+- **POST** `/api/notes/{id}/trash`
+- **Headers:** `Authorization: Bearer <token>`
 - **URL Parameters:**
   - `id` (string): The unique MongoDB ObjectId of the note to delete.
-  - `userId` (string, required): The unique identifier of the user executing the delete.
 - **Status Codes:**
   - `204 No Content`: Deletion successful.
-  - `404 Not Found`: Note ID does not exist or userId does not match.
-  - `400 Bad Request`: Invalid payload, missing userId, or malformed ID format.
+  - `404 Not Found`: Note ID does not exist or does not belong to user.
+  - `400 Bad Request`: Invalid payload or malformed ID format.
+  - `401 Unauthorized`: Token is missing or invalid.

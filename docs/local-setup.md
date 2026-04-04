@@ -24,7 +24,8 @@ The API is built using ASP.NET Core Minimal APIs and interfaces with MongoDB.
    ```env
    MONGO_URI=mongodb://localhost:27017
    MONGO_DB_NAME=student_notes_db
-   MONGO_COLLECTION_NAME=notes
+   JWT_SECRET=YOUR_VERY_SECURE_SECRET_KEY_HERE_AT_LEAST_32_CHARS
+   GoogleAuth__ClientId=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
    ```
    *(Ensure MongoDB is locally running, or substitute the URL with an active Atlas connection string).*
 4. Run the application:

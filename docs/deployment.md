@@ -19,10 +19,11 @@ Both frontend and backend are deployed automatically whenever code is pushed (or
 - `AZURE_SUBSCRIPTION_ID`
 
 **Target Environment / App Service Settings:**
-Note: You must map these values manually in your production Azure environment (*App Service > Settings > Environment Variables*) so the app can communicate with MongoDB:
+Note: You must map these values manually in your production Azure environment (*App Service > Settings > Environment Variables*) so the app can communicate with MongoDB and process JWT/Google Auth:
 - `MONGO_URI`
 - `MONGO_DB_NAME`
-- `MONGO_COLLECTION_NAME`
+- `JWT_SECRET` (A strong, random 32+ character string for token signing)
+- `GoogleAuth__ClientId` (Your Google OAuth 2.0 Web Client ID)
 
 ### 2. Frontend Workflow (`azure-static-web-apps-....yml`)
 - Tracks changes in the `React.js front-end/` directory.

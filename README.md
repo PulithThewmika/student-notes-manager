@@ -85,3 +85,10 @@ To successfully run the GitHub Actions workflows, configure the following secret
 - `AZURE_STATIC_WEB_APPS_API_TOKEN_...` — Deployment token for the Azure Static Web App auto-generated during Azure portal creation.
 - `AZURE_BACKEND` — The public URL of your deployed Azure Web App's endpoint (e.g., `https://<your-app-name>.azurewebsites.net/api/notes`).
 - `JWT_SECRET` — A secure 32+ character signing key stored in the Azure deployment configuration.
+
+Future updates :
+
+Include rag system for notes manage 
+-seperate complex note into sub tasks
+-plan to achivement plan from available notes
+-include credit system for notes and credits will be assigned by rag based on workload 

@@ -89,6 +89,8 @@ To successfully run the GitHub Actions workflows, configure the following secret
 Future updates :
 
 Include rag system for notes manage 
+
 -seperate complex note into sub tasks
 -plan to achivement plan from available notes
 -include credit system for notes and credits will be assigned by rag based on workload 
+-implement rank system based on acivement of credits 
